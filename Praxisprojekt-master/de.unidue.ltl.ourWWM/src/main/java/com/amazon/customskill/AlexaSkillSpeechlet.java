@@ -47,15 +47,20 @@ implements SpeechletV2
 	private static int sum;
 	private static int sum2;
 	private static int sum3;
+	private static int sum4;
+	private static int sum5;
 	private static int questions;
 	private static int questions2;
+	private static int questions3;
 	private static String question = "";
 	private static String question2 = "";
+	private static String question3 = "";
 	private static String correctAnswer = "";
 	private static String correctAnswer2 = "";
-	private static enum RecognitionState {Answer, AnswerTwo, AnswerThree, YesNo, YesNoTwo, OneTwo, VokabelQuiz, Vokabel, WhichPlayer};
+	private static String correctAnswer3 = "";
+	private static enum RecognitionState {Answer, AnswerTwo, AnswerThree, AnswerFour, AnswerFive, YesNo, YesNoTwo, YesNoLevel, OneTwo, VokabelQuiz, Vokabel, WhichPlayer, WhichPlayerThree};
 	private RecognitionState recState;
-	private static enum UserIntent {menü, bye, playerone, playertwo, vokabeln, quiz, einer, mehrere, weiter, aufhören, hello, tree, now, maybe, today, einfach, mittel, schwer, Error};
+	private static enum UserIntent {menü, bye, playerone, playertwo, vokabeln, quiz, einer, mehrere, weiter, aufhören, hello, tree, now, maybe, today, einfach, mittel, schwer, moin, nextlevel, Error};
 	UserIntent ourUserIntent;
 
 	static String welcomeMsg = "Hallo und herzlich willkommen bei Quizzitch. Ein oder zwei Spieler?";
@@ -82,6 +87,9 @@ implements SpeechletV2
 	static String errorSpielereinszweiMsg = "Welcher Spieler weiß die Antwort?";
 	static String SpielerEinsMsg = "Spieler eins war schneller. wie lautet die Antwort?";
 	static String SpielerZweiMsg = "Spieler zwei war schneller. wie lautet die Antwort?";
+	static String continueLevelMsg = "Weiter gehts in Level zwei. Möchten Sie weiterspielen?";
+	static String playerOneWins = "Spieler eins gewinnt die Runde.";
+	static String playerTwoWins = "Spieler zwei gewinnt die Runde.";
 
 
 
@@ -104,6 +112,11 @@ implements SpeechletV2
 	{
 		logger.info("Alexa session begins");
 		sum = 0;
+		sum2 = 0;
+		sum3 = 0;
+		questions = 0;
+		questions2 = 0;
+		questions3 = 0;
 		recState = RecognitionState.OneTwo;
 	}
 
@@ -156,6 +169,26 @@ implements SpeechletV2
 		case 500000: question2 = "Frage?"; correctAnswer2 = "today"; break;
 		}
 	}
+	
+	private void selectQuestion3() {
+		switch(questions3){
+		case 0: question3 = "moin moin bedeutet auf englisch moin moin. Sage moin moin auf englisch. Welcher Spieler weiß die Antwort?"; correctAnswer3 = "moin"; break;
+		case 50: question3 = "baum bedeutet auf englisch tree. Sage baum auf englisch. Welcher Spieler weiß die Antwort?"; correctAnswer3 = "tree"; break;
+		case 100: question3 = "jetzt bedeutet auf englisch now. Sage jetzt auf englisch. Welcher Spieler weiß die Antwort?"; correctAnswer3 = "now"; break;
+		case 200: question3 = "vielleicht bedeutet auf englisch maybe. Sage vielleicht auf englisch. Welcher Spieler weiß die Antwort?"; correctAnswer3 = "maybe"; break;
+		case 300: question3 = "heute bedeutet auf englisch today. Sage heute auf englisch. Welcher Spieler weiß die Antwort?"; correctAnswer3 = "today"; break;
+		case 500: question3 = "Frage?"; correctAnswer3 = "today"; break;
+		case 1000: question3 = "Frage?"; correctAnswer3 = "today"; break;
+		case 2000: question3 = "Frage?"; correctAnswer3 = "today"; break;
+		case 4000: question3 = "Frage?"; correctAnswer3 = "today"; break;
+		case 8000: question3 = "Frage?"; correctAnswer3 = "today"; break;
+		case 16000: question3 = "Frage?"; correctAnswer3 = "today"; break;
+		case 32000: question3 = "Frage?"; correctAnswer3 = "today"; break;
+		case 64000: question3 = "Frage?"; correctAnswer3 = "today"; break;
+		case 125000: question3 = "Frage?"; correctAnswer3 = "today"; break;
+		case 500000: question3 = "Frage?"; correctAnswer3 = "today"; break;
+		}
+	}
 
 	@Override
 	public SpeechletResponse onIntent(SpeechletRequestEnvelope<IntentRequest> requestEnvelope)
@@ -172,10 +205,14 @@ implements SpeechletV2
 		case VokabelQuiz: resp = evaluateVokabelQuiz(userRequest); break;
 		case YesNo: resp = evaluateYesNo(userRequest); break;
 		case WhichPlayer: resp = evaluateWhichPlayer(userRequest); break;
+		case WhichPlayerThree: resp = evaluateWhichPlayerThree(userRequest); break;
 		case Vokabel: resp = evaluateVokabel(userRequest); break;
 		case AnswerTwo: resp = evaluateAnswerTwo(userRequest); break;
 		case AnswerThree: resp = evaluateAnswerThree(userRequest); break;
+		case AnswerFour: resp = evaluateAnswerFour(userRequest); break;
+		case AnswerFive: resp = evaluateAnswerFive(userRequest); break;
 		case YesNoTwo: resp = evaluateYesNoTwo(userRequest); break;
+		case YesNoLevel: resp = evaluateYesNoLevel(userRequest); break;
 		/*recState = RecognitionState.Answer; break;*/
 		default: resp = response("Erkannter Text: " + userRequest);
 		}   
@@ -224,6 +261,27 @@ implements SpeechletV2
 		return res;
 	}
 	
+	private SpeechletResponse evaluateYesNoLevel(String userRequest) {
+		SpeechletResponse res = null;
+		recognizeUserIntent(userRequest);
+		switch (ourUserIntent) {
+		case weiter: {
+			selectQuestion3();
+			res = askUserResponse(question3);
+			recState = RecognitionState.WhichPlayerThree; break;
+		} case aufhören: {
+			/*recState = RecognitionState.WhichPlayer;*/
+			res = response(/*buildString(sumMsg, String.valueOf(sum), "")+" "+*/goodbyeMsg); break;
+		} case menü: {
+			res = askUserResponse(welcomeMsg);
+			recState = RecognitionState.OneTwo; break;
+		} default: {
+			res = askUserResponse(errorYesNoMsg);
+		}
+		}
+		return res;
+	}
+	
 	private SpeechletResponse evaluateOneTwo(String userRequest) {
 		SpeechletResponse res = null;
 		recognizeUserIntent(userRequest);
@@ -250,7 +308,9 @@ implements SpeechletV2
 			res = askUserResponse(difficultyMsg);
 			recState = RecognitionState.Vokabel; break;
 		} case quiz: {
-			res = askUserResponse(singleQuizMsg); break;
+			selectQuestion();
+			res = askUserResponse(singleQuizMsg+" "+question);
+			recState = RecognitionState.Answer; break;
 		} case menü: {
 			res = askUserResponse(welcomeMsg);
 			recState = RecognitionState.OneTwo; break;
@@ -306,6 +366,26 @@ implements SpeechletV2
 		}
 		return res;
 	}
+	
+	private SpeechletResponse evaluateWhichPlayerThree(String userRequest) {
+		SpeechletResponse res = null;
+		recognizeUserIntent(userRequest);
+		switch (ourUserIntent) {
+		case playerone: {
+			res = askUserResponse(SpielerEinsMsg);
+			recState = RecognitionState.AnswerFour; break;
+		} case playertwo: {
+			res = askUserResponse(SpielerZweiMsg);
+			recState = RecognitionState.AnswerFive; break;
+		} case menü: {
+			res = askUserResponse(welcomeMsg);
+			recState = RecognitionState.OneTwo; break;
+		} default: {
+			res = askUserResponse(errorSpielereinszweiMsg);
+		}
+		}
+		return res;
+	}
 
 	private SpeechletResponse evaluateAnswer(String userRequest) {
 		SpeechletResponse res = null;
@@ -327,13 +407,13 @@ implements SpeechletV2
 						res = response(correctMsg+" "+congratsMsg+" "+goodbyeMsg);
 					} else {
 						recState = RecognitionState.YesNo;
-						res = askUserResponse(correctMsg+" "+sumMsg+" "+continueMsg);
+						res = askUserResponse(correctMsg+" "+buildString(sumMsg, String.valueOf(sum), " ")+" "+continueMsg);
 						/*recState = RecognitionState.YesNo;*/
 					}
 				} else {
 					increaseQuestions();
-					recState = RecognitionState.YesNoTwo;
-					res = askUserResponse(wrongMsg+" "+sumMsg+" "+continueMsg);
+					recState = RecognitionState.YesNo;
+					res = askUserResponse(wrongMsg+" "+buildString(sumMsg, String.valueOf(sum), " ")+" "+continueMsg);
 				}
 			} /*else {
 				res = askUserResponse(errorAnswerMsg);
@@ -356,12 +436,14 @@ implements SpeechletV2
 					|| ourUserIntent.equals(UserIntent.bye)
 					)*/ {
 				logger.info("User answer ="+ ourUserIntent.name().toLowerCase()+ "/correct answer="+correctAnswer2);
+				
 				if (ourUserIntent.name().toLowerCase().equals(correctAnswer2)) {
 					logger.info("User answer recognized as correct.");
 					increaseSum2();
 					increaseQuestions2();
-					if (sum == 1000000) {
-						res = response(correctMsg+" "+congratsMsg+" "+goodbyeMsg);
+					if (sum2 == 200) {
+						recState = RecognitionState.YesNoLevel;
+						res = askUserResponse(correctMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3), " ")+" "+playerOneWins+" "+continueLevelMsg);
 					} else {
 						recState = RecognitionState.YesNoTwo;
 						res = askUserResponse(correctMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3), " ")+" "+continueMsg);
@@ -371,6 +453,44 @@ implements SpeechletV2
 					increaseQuestions2();
 					recState = RecognitionState.YesNoTwo;
 					res = askUserResponse(wrongMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3), " ")+" "+continueMsg);
+				}
+			} /*else {
+				res = askUserResponse(errorAnswerMsg);
+			}
+		/*}
+		}*/
+				return res;
+	}
+	
+	private SpeechletResponse evaluateAnswerFour(String userRequest) {
+		SpeechletResponse res = null;
+		recognizeUserIntent(userRequest);
+		/*switch (ourUserIntent) {*/
+		/*default :{*/
+			/*if (ourUserIntent.equals(UserIntent.hello)
+					|| ourUserIntent.equals(UserIntent.tree)
+					|| ourUserIntent.equals(UserIntent.now)
+					|| ourUserIntent.equals(UserIntent.maybe)
+					|| ourUserIntent.equals(UserIntent.today)
+					|| ourUserIntent.equals(UserIntent.bye)
+					)*/ {
+				logger.info("User answer ="+ ourUserIntent.name().toLowerCase()+ "/correct answer="+correctAnswer3);
+				if (ourUserIntent.name().toLowerCase().equals(correctAnswer3)) {
+					logger.info("User answer recognized as correct.");
+					increaseSum4();
+					increaseQuestions3();
+					if (sum4 == 200) {
+						recState = RecognitionState.YesNoLevel;
+						res = askUserResponse(correctMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2+sum4), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3+sum5), " ")+" "+playerOneWins+" "+continueLevelMsg);
+					} else {
+						recState = RecognitionState.YesNoTwo;
+						res = askUserResponse(correctMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2+sum4), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3+sum5), " ")+" "+continueMsg);
+						/*recState = RecognitionState.YesNo;*/
+					}
+				} else {
+					increaseQuestions3();
+					recState = RecognitionState.YesNoTwo;
+					res = askUserResponse(wrongMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2+sum4), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3+sum5), " ")+" "+continueMsg);
 				}
 			} /*else {
 				res = askUserResponse(errorAnswerMsg);
@@ -393,12 +513,15 @@ implements SpeechletV2
 					|| ourUserIntent.equals(UserIntent.bye)
 					)*/ {
 				logger.info("User answer ="+ ourUserIntent.name().toLowerCase()+ "/correct answer="+correctAnswer2);
+				
 				if (ourUserIntent.name().toLowerCase().equals(correctAnswer2)) {
 					logger.info("User answer recognized as correct.");
 					increaseSum3();
 					increaseQuestions2();
-					if (sum == 1000000) {
-						res = response(correctMsg+" "+congratsMsg+" "+goodbyeMsg);
+					if (sum3 == 200) {
+						/*res = response(correctMsg+" "+congratsMsg+" "+goodbyeMsg);*/
+						recState = RecognitionState.YesNoLevel;
+						res = askUserResponse(correctMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3), " ")+" "+playerTwoWins+" "+continueLevelMsg);
 					} else {
 						recState = RecognitionState.YesNoTwo;
 						res = askUserResponse(correctMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3), " ")+" "+continueMsg);
@@ -408,6 +531,45 @@ implements SpeechletV2
 					increaseQuestions2();
 					recState = RecognitionState.YesNoTwo;
 					res = askUserResponse(wrongMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3), " ")+" "+continueMsg);
+				}
+			} /*else {
+				res = askUserResponse(errorAnswerMsg);
+			}
+		/*}
+		}*/
+				return res;
+	}
+	
+	private SpeechletResponse evaluateAnswerFive(String userRequest) {
+		SpeechletResponse res = null;
+		recognizeUserIntent(userRequest);
+		/*switch (ourUserIntent) {*/
+		/*default :{*/
+			/*if (ourUserIntent.equals(UserIntent.hello)
+					|| ourUserIntent.equals(UserIntent.tree)
+					|| ourUserIntent.equals(UserIntent.now)
+					|| ourUserIntent.equals(UserIntent.maybe)
+					|| ourUserIntent.equals(UserIntent.today)
+					|| ourUserIntent.equals(UserIntent.bye)
+					)*/ {
+				logger.info("User answer ="+ ourUserIntent.name().toLowerCase()+ "/correct answer="+correctAnswer3);
+				if (ourUserIntent.name().toLowerCase().equals(correctAnswer3)) {
+					logger.info("User answer recognized as correct.");
+					increaseSum5();
+					increaseQuestions3();
+					if (sum5 == 200) {
+						/*res = response(correctMsg+" "+congratsMsg+" "+goodbyeMsg);*/
+						recState = RecognitionState.YesNoLevel;
+						res = askUserResponse(correctMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2+sum4), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3+sum5), " ")+" "+playerTwoWins+" "+continueLevelMsg);
+					} else {
+						recState = RecognitionState.YesNoTwo;
+						res = askUserResponse(correctMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2+sum4), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3+sum5), " ")+" "+continueMsg);
+						/*recState = RecognitionState.YesNo;*/
+					}
+				} else {
+					increaseQuestions3();
+					recState = RecognitionState.YesNoTwo;
+					res = askUserResponse(wrongMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2+sum4), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3+sum5), " ")+" "+continueMsg);
 				}
 			} /*else {
 				res = askUserResponse(errorAnswerMsg);
@@ -490,6 +652,46 @@ implements SpeechletV2
 		}
 	}
 	
+	private void increaseSum4() {
+		switch(sum4){
+		case 0: sum4 = 50; break;
+		case 50: sum4 = 100; break;
+		case 100: sum4 = 200; break;
+		case 200: sum4 = 300; break;
+		case 300: sum4 = 500; break;
+		case 500: sum4 = 1000; break;
+		case 1000: sum4 = 2000; break;
+		case 2000: sum4 = 4000; break;
+		case 4000: sum4 = 8000; break;
+		case 8000: sum4 = 16000; break;
+		case 16000: sum4 = 32000; break;
+		case 32000: sum4 = 64000; break;
+		case 64000: sum4 = 125000; break;
+		case 125000: sum4 = 500000; break;
+		case 500000: sum4 = 1000000; break;
+		}
+	}
+	
+	private void increaseSum5() {
+		switch(sum5){
+		case 0: sum5 = 50; break;
+		case 50: sum5 = 100; break;
+		case 100: sum5 = 200; break;
+		case 200: sum5 = 300; break;
+		case 300: sum5 = 500; break;
+		case 500: sum5 = 1000; break;
+		case 1000: sum5 = 2000; break;
+		case 2000: sum5 = 4000; break;
+		case 4000: sum5 = 8000; break;
+		case 8000: sum5 = 16000; break;
+		case 16000: sum5 = 32000; break;
+		case 32000: sum5 = 64000; break;
+		case 64000: sum5 = 125000; break;
+		case 125000: sum5 = 500000; break;
+		case 500000: sum5 = 1000000; break;
+		}
+	}
+	
 	private void increaseQuestions() {
 		switch(questions){
 		case 0: questions = 50; break;
@@ -507,6 +709,7 @@ implements SpeechletV2
 		case 64000: questions = 125000; break;
 		case 125000: questions = 500000; break;
 		case 500000: questions = 1000000; break;
+		case 1000000: questions = 0; break;
 		}
 	}
 	
@@ -527,6 +730,28 @@ implements SpeechletV2
 		case 64000: questions2 = 125000; break;
 		case 125000: questions2 = 500000; break;
 		case 500000: questions2 = 1000000; break;
+		case 1000000: questions = 0; break;
+		}
+	}
+	
+	private void increaseQuestions3() {
+		switch(questions3){
+		case 0: questions3 = 50; break;
+		case 50: questions3 = 100; break;
+		case 100: questions3 = 200; break;
+		case 200: questions3 = 300; break;
+		case 300: questions3 = 500; break;
+		case 500: questions3 = 1000; break;
+		case 1000: questions3 = 2000; break;
+		case 2000: questions3 = 4000; break;
+		case 4000: questions3 = 8000; break;
+		case 8000: questions3 = 16000; break;
+		case 16000: questions3 = 32000; break;
+		case 32000: questions3 = 64000; break;
+		case 64000: questions3 = 125000; break;
+		case 125000: questions3 = 500000; break;
+		case 500000: questions3 = 1000000; break;
+		case 1000000: questions = 0; break;
 		}
 	}
 
@@ -551,6 +776,8 @@ implements SpeechletV2
 		String pattern19 = "\\bplayertwo\\b";
 		String pattern20 = "\\bbye\\b";
 		String pattern21 = "\\bmenü\\b";
+		String pattern22 = "\\bmoin\\b";
+		String pattern23 = "\\bnextlevel\\b";
 		
 
 		Pattern p4 = Pattern.compile(pattern4);
@@ -589,6 +816,10 @@ implements SpeechletV2
 		Matcher m20= p20.matcher(userRequest);
 		Pattern p21 = Pattern.compile(pattern21);
 		Matcher m21= p21.matcher(userRequest);
+		Pattern p22 = Pattern.compile(pattern22);
+		Matcher m22= p22.matcher(userRequest);
+		Pattern p23 = Pattern.compile(pattern23);
+		Matcher m23= p23.matcher(userRequest);
 		
 		if (m4.find()) {
 			ourUserIntent = UserIntent.now;
@@ -626,6 +857,10 @@ implements SpeechletV2
 			ourUserIntent = UserIntent.bye;
 		} else if (m21.find()) {
 			ourUserIntent = UserIntent.menü;
+		} else if (m22.find()) {
+			ourUserIntent = UserIntent.moin;
+		} else if (m23.find()) {
+			ourUserIntent = UserIntent.nextlevel;
 		} else {
 			ourUserIntent = UserIntent.Error;
 		}
