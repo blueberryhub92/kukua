@@ -9,7 +9,16 @@
  */
 package com.amazon.customskill;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
+
+
+
+
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
@@ -21,6 +30,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.amazon.customskill.AlexaSkillSpeechlet.RecognitionState;
+import com.amazon.customskill.AlexaSkillSpeechlet.UserIntent;
 import com.amazon.speech.json.SpeechletRequestEnvelope;
 import com.amazon.speech.slu.Intent;
 import com.amazon.speech.speechlet.IntentRequest;
@@ -32,6 +43,15 @@ import com.amazon.speech.speechlet.SpeechletV2;
 import com.amazon.speech.ui.PlainTextOutputSpeech;
 import com.amazon.speech.ui.Reprompt;
 import com.amazon.speech.ui.SsmlOutputSpeech;
+
+import nlp.dkpro.backend.LinguisticPreprocessor;
+import nlp.dkpro.backend.NlpSingleton;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
+
 
 
 /*
@@ -51,60 +71,66 @@ implements SpeechletV2
 	private static int sum5;
 	private static int sum6;
 	private static int sum7;
-	private static int questions;
-	private static int questions2;
-	private static int questions3;
-	private static int questions4;
 	private static String question = "";
+	private static String question1 = "";
+	private static String question11 = "";
 	private static String question2 = "";
 	private static String question3 = "";
 	private static String question4 = "";
 	private static String correctAnswer = "";
+	private static String correctAnswer1 = "";
+	private static String correctAnswer11 = "";
 	private static String correctAnswer2 = "";
 	private static String correctAnswer3 = "";
 	private static String correctAnswer4 = "";
-	private static enum RecognitionState {Answer, AnswerTwo, AnswerThree, AnswerFour, AnswerFive, AnswerSix, AnswerSeven, YesNo, YesNoTwo, YesNoLevel, YesNoLevelTwo, OneTwo, VokabelQuiz, Vokabel, WhichPlayer, WhichPlayerThree, WhichPlayerFour, AgainOrMenu, Weiterquizzen, SingleQuiz, YesNoQuiz, YesNoVokabeln, AnswerVokabeln, AnswerQuiz};
+	public static enum RecognitionState {YesNoQuizLevelEnd, YesNoQuizLevelOne, YesNoQuizLevelTwo, YesNoQuizLevelThree, YesNoVokabelnEasy, YesNoVokabelnMedium, YesNoVokabelnHard, AnswerQuizLevelOne, AnswerQuizLevelTwo, AnswerQuizLevelThree, AnswerVokabelnEasy, AnswerVokabelnMedium, AnswerVokabelnHard, Answer, AnswerTwo, AnswerThree, AnswerFour, AnswerFive, AnswerSix, AnswerSeven, YesNo, YesNoTwo, YesNoLevel, YesNoLevelTwo, OneTwo, VokabelQuiz, Vokabel, WhichPlayer, WhichPlayerThree, WhichPlayerFour, AgainOrMenu, resumequizzen, SingleQuiz, YesNoQuiz, YesNoVokabeln, AnswerVokabeln, AnswerQuiz};
 	private RecognitionState recState;
-	private static enum UserIntent {bone, one, two, nochmal, banana, menü, bye, playerone, playertwo, vokabeln, quiz, einer, mehrere, weiter, ja, nein, aufhören, beenden, hello, tree, light, now, maybe, today, einfach, mittel, schwer, moin, nextlevel, Error, Quiz, food, head, hair, leg, sun, always, water, table, city, stairs, haircolour, wheel, bellybutton, broken, contract, community, candle, field, gale, giveup, microwave, pillow, policy, balance, acquaintance, bossy, confident, generous, 
+	public static enum UserIntent {hey, hand, vocab, levelone, leveltwo, difficulty, bone, onne, twwo, again, banana, menu, bye, playerone, playertwo, vocabulary, quiz, resume, yess, no, quit, hello, tree, light, now, maybe, today, easy, medium, hard, moin, nextlevel, Error, Quiz, food, head, hair, leg, sun, always, water, table, city, stairs, haircolour, wheel, bellybutton, broken, contract, community, candle, field, gale, giveup, microwave, pillow, policy, balance, acquaintance, bossy, confident, generous, 
 		mother, inlaw, moody, reliable, accountancy, apply, fluently, insist, representative, 
 		smoothly, bewillingto, middleclass, motherinlaw};
 	UserIntent ourUserIntent;
 
-	static String welcomeMsg = "Hallo und herzlich willkommen bei Quizzitch. Möchten einer oder mehrere Spieler spielen?";
-	static String singleMsg = "Sie sind im Einzelspielermodus. Vokabeln lernen oder quizzen?";
-	static String multiMsg = "Sie sind im Mehrspielermodus. Einigen Sie sich nun, wer Spieler 1 und wer Spieler 2 ist. Wenn Sie die Antwort auf die Frage kennen, rufen Sie Ihre Spielernummer. Ist die Antwort korrekt, erhalten Sie Punkte. Los geeeehts!";	static String difficultyMsg = "Schwierigkeit einfach, mittel oder schwer?";
-	static String singleQuizMsg = "Sie sind im Einzelquiz. Los geehts!";
-	static String wrongMsg = "Das ist leider falsch.";
-	static String correctMsg = "Das ist richtig.";
-	static String continueMsg = "Möchten Sie weiterspielen?";
-	static String congratsMsg = "Herzlichen Glückwunsch! Sie haben eine Million Punkte gewonnen.";
-	static String goodbyeMsg = "Auf Wiedersehen!";
-	static String sumMsg = "Sie haben {replacement} Punkte.";
-	static String sumTwoMsg = "Spieler eins hat {replacement3} Punkte.";
-	static String sumThreeMsg = "Spieler zwei hat {replacement5} Punkte.";
-	static String errorYesNoMsg = "Das habe ich nicht verstanden. Sagen Sie bitte weiter oder aufhören.";
-	static String errorAgainOrMenuMsg = "Das habe ich nicht verstanden. Sagen Sie bitte nochmal, Menü oder aufhören.";
-	static String errorAnswerMsg = "Das habe ich nicht verstanden. Sagen Sie bitte erneut Ihre Antwort.";
-	static String errorOneTwoMsg = "Das habe ich nicht verstanden. Sagen Sie bitte einer oder zwei.";
-	static String errorVokabelQuizMsg = "Das habe ich nicht verstanden. Sagen Sie bitte Vokabeln oder Quiz.";
-	static String errorVokabelMsg = "In welcher Schwierigkeitsstufe möchten Sie Vokabeln üben? Sagen Sie bitte einfach, mittel oder schwer.";
-	static String VokabelLeicht = "Sie sind im leichten Vokabeltrainermodus";
-	static String VokabelMittel = "Sie sind im mittleren Vokabeltrainermodus";
-	static String VokabelSchwer = "Sie sind im schweren Vokabeltrainermodus";
-	static String errorSpielereinszweiMsg = "Welcher Spieler weiß die Antwort?";
-	static String SpielerEinsMsg = "Spieler eins war schneller. wie lautet die Antwort?";
-	static String SpielerZweiMsg = "Spieler zwei war schneller. wie lautet die Antwort?";
-	static String continueLevelMsg = "Weiter gehts in Level zwei. Möchten Sie weiterspielen?";
-	static String continueLevelTwoMsg = "Weiter gehts in Level drei. Möchten Sie weiterspielen?";
-	static String playerOneWins = "Spieler eins gewinnt die Runde.";
-	static String playerTwoWins = "Spieler zwei gewinnt die Runde.";
-	static String playerOneWinsGame = "Spieler eins gewinnt das Spiel.";
-	static String playerTwoWinsGame = "Spieler zwei gewinnt das Spiel.";
-	static String againOrMenuMsg = "Wollen Sie nochmal spielen, zurück ins Menü oder aufhören?";
-	static String weiterquizzenMsg = "Möchten Sie nun etwas Quiz spielen oder beenden?";
-	static String errorWeiterquizzen = "Das habe ich nicht verstanden. Sagen Sie bitte Quiz oder beenden.";
-	static String weiterVokabelnMsg = "Möchten Sie nun etwas Vokabeln lernen oder beenden?";
-
+	static String welcomeMsg = "Hello and welcome at Quizzitch. One or more players?";
+	static String singleMsg = "You're in single mode. Do you want to train vocabulary first or starting a quiz?";
+	static String multiMsg = "You're in two player mode. Please clarify who wants to be player one and who wants to be player two. If you think you know the correct answer, say you're player number. You will get points if your answer is correct. Let's begin!";	
+	static String difficultyMsg = "Please choose between the difficulty levels easy, medium and hard.";
+	static String singleQuizMsg = "You´re in single quiz mode. Let's start with the first question.";
+	static String wrongMsg = "That's wrong. ";
+	static String wrongVocMsg = "That's wrong. The correct answer would be";
+	static String correctMsg = "That´s correct.";
+	static String continueMsg = "Do you want to resume playing?";
+	static String congratsMsg = "Congratulations! You've won one {replacement} points.";
+	static String goodbyeMsg = "I hope to hear from you soon, good bye!";
+	static String sumMsg = "You've won {replacement} points. ";
+	static String sumTwoMsg = "The score is {replacement3} ";
+	static String sumThreeMsg = "to {replacement5}.";
+	static String errorYesNoMsg = "Sorry, I did not unterstand that. Please say resume or quit.";
+	static String errorAgainOrMenuMsg = "Sorry I did not unterstand that. Please say menu, again or quit.";
+	static String errorAnswerMsg = "Sorry I did not unterstand that. Please mention your answer again.";
+	static String errorOneTwoMsg = "Unfortunately I did not unterstand that. Please say one or two.";
+	static String errorVokabelQuizMsg = "Unfortunately I did not understand that. Say vocabulary or quiz.";
+	static String errorVokabelMsg = "What difficulty level do you want to train your vocabulary in? You can choose between easy, medium and hard.";
+	static String VokabelLeicht = "Welcome to the easy vocab trainer";
+	static String VokabelMittel = "Welcome to the medium vocab trainer";
+	static String VokabelSchwer = "Welcome to the hard vocab trainer";
+	static String errorSpielereinszweiMsg = "Which player knows the correct answer?";
+	static String SpielerEinsMsg = "Player one was faster. What's your answer?";
+	static String SpielerEinsKurzMsg = "Player one?";
+	static String SpielerZweiMsg = "Player two was faster. What's your answer?";
+	static String SpielerZweiKurzMsg = "Player two?";
+	static String continueLevelMsg = "Level two is up. Do you want to contiunue?";
+	static String continueLevelTwoMsg = "Level three is up. Do you want to contiunue?";
+	static String continueEinzelQuizLevelTwoMsg = "You can resume with level two. Do you want to jump to the second level?";
+	static String continueEinzelQuizLevelThreeMsg = "You can resume with level three. Do you want to jump to the third level?";
+	static String continueEinzelQuizEndMsg = "Congrats, you made it! You passed all levels! Do you want to resume, change level or back to the menu?";
+	static String playerOneWins = "Player one has won this round.";
+	static String playerTwoWins = "Player two has won this round.";
+	static String playerOneWinsGame = "Player one has won the game.";
+	static String playerTwoWinsGame = "Player two has won the game.";
+	static String againOrMenuMsg = "Do you want to play again, go back to the menu or quit?";
+	static String resumequizzenMsg = "Do you want to play a quiz instead or quit the app??";
+	static String errorresumequizzen = "Sorry I did not understand that. Please say quiz or quit the app.";
+	static String resumeVokabelnMsg = "Do you want to the some vocabulary instead or quit the app?";
 	
 
 
@@ -120,6 +146,21 @@ implements SpeechletV2
 		return msg.replace("{replacement5}", replacement5).replace("{replacement6}", replacement6);
 	}
 
+	
+	public static Connection connect() {
+		    Connection con = null; 
+		    try {
+		      Class.forName("org.sqlite.JDBC");
+		      con = DriverManager.getConnection("jdbc:sqlite:Vokabeln.db"); // connecting to our database
+		      System.out.println("Connected!");
+		    } catch (ClassNotFoundException | SQLException e ) {
+		      // TODO Auto-generated catch block
+		      System.out.println(e+"");
+		    }
+		    
+		    return con; 
+		  }
+		
 
 
 	@Override
@@ -133,10 +174,6 @@ implements SpeechletV2
 		sum5 = 0;
 		sum6 = 0;
 		sum7 = 0;
-		questions = 0;
-		questions2 = 0;
-		questions3 = 0;
-		questions4 = 0;
 		recState = RecognitionState.OneTwo;
 	}
 
@@ -149,205 +186,150 @@ implements SpeechletV2
 	}
 	
 	private void selectQuestion() {
-		switch(questions){
-		case 0: question = "Hallo bedeutet auf englisch hello. Sage hallo auf englisch."; correctAnswer = "hello"; break;
-		case 50: question = "baum bedeutet auf englisch tree. Sage baum auf englisch."; correctAnswer = "tree"; break;
-		case 100: question = "jetzt bedeutet auf englisch now. Sage jetzt auf englisch."; correctAnswer = "now"; break;
-		case 200: question = "vielleicht bedeutet auf englisch maybe. Sage vielleicht auf englisch."; correctAnswer = "maybe"; break;
-		case 300: question = "heute bedeutet auf englisch today. Sage heute auf englisch."; correctAnswer = "today"; break;
-		case 500: question = "das Essen bedeutet auf englisch food.Sage Essen auf englisch"; correctAnswer = "food"; break;
-		case 1000: question = "Kopf bedeutet auf englisch head.Sage Kopf auf englisch."; correctAnswer = "head"; break;
-		case 2000: question = "Hand bedeutet auf englisch hand.Sage Hand auf englisch"; correctAnswer = "hand"; break;
-		case 4000: question = "Haare bedeutet auf englisch Hair.Sage Haare auf englisch."; correctAnswer = "hair"; break;
-		case 8000: question = "Bein bedeutet auf englisch leg. Sage Bein auf englisch."; correctAnswer = "leg"; break;
-		case 16000: question = "Sonne bedeutet auf englisch sun. Sage Sonne auf englisch."; correctAnswer = "sun"; break;
-		case 32000: question = "Immer bedeutet auf englisch always.Sage immer auf englisch"; correctAnswer = "always"; break;
-		case 64000: question = "Wasser bedeutet auf englisch water.Sage Wasser auf englisch"; correctAnswer = "water"; break;
-		case 125000: question = "Tisch bedeutet auf englisch table. Sage Tisch auf englisch."; correctAnswer = "table"; break;
-		case 500000: question = "Stadt bedeutet auf englisch city. Sage Stadt auf englisch."; correctAnswer = "city"; break;
+		
+		Connection con = AlexaSkillSpeechlet.connect(); 
+		  PreparedStatement ps = null; 
+		  ResultSet rs = null; 
+		  
+		  try {
+		    String sql = "SELECT * FROM Vokabelliste ORDER BY RANDOM() LIMIT 1";
+		    ps = con.prepareStatement(sql); 
+		    rs = ps.executeQuery();
+		    /*System.out.println("ALL VOCABULARY\n");*/
+		    while(rs.next()) {
+		      /*int number = rs.getInt("number"); */
+		      String de = rs.getString("de"); 
+		      String en = rs.getString("en"); 
+		      String Thema = rs.getString("Thema"); 
+		      
+		    question = de; correctAnswer = en;
+		      
+		    }
+		  } catch(SQLException e) {
+		    System.out.println(e.toString());
+		  } finally {
+		    try {
+		      rs.close();
+		      ps.close();
+		      con.close(); 
+		    } catch(SQLException e) {
+		      System.out.println(e.toString());
+		    }
+		  }
+		  
+		  
 		}
-	}
-
-	/*private void selectQuestionVokMittel() {
-		switch(sum){
-		case 0: question = "Treppe bedeutet auf englisch stairs. Sage auf Treppe auf englisch."; correctAnswer = "stairs"; break;
-		case 50: question = "Haarfarbe bedeutet auf englisch Haircolour.Sage Haarfarbe auf englisch."; correctAnswer = "haircolour"; break;
-		case 100: question = "Reifen bedeutet auf englisch wheel. Sage Reifen auf englisch."; correctAnswer = "wheel"; break;
-		case 200: question = "Bauchnabel bedeutet auf englisch bellybutton. Sage Bauchnabel auf englisch."; correctAnswer = "bellybutton"; break;
-		case 300: question = "gebrochen heißt auf englisch broken. Sage gebrochen auf englisch."; correctAnswer = "broken"; break;
-		case 500: question = "Kerze heißt auf englisch candle.Sage Kerze auf englisch"; correctAnswer = "candle"; break;
-		case 1000: question = "Vertrag heißt auf englisch contract. Sage Vertrag auf englisch"; correctAnswer = "contract"; break;
-		case 2000: question = "Gemeinschaft heißt auf Englisch community. Sage Gemeinschaft auf englisch."; correctAnswer = "community"; break;
-		case 4000: question = "Feld heißt auf englisch field. Sage Feld auf englisch."; correctAnswer = "field"; break;
-		case 8000: question = "Sturm heißt auf englisch gale. Sage Sturm auf englisch."; correctAnswer = "gale"; break;
-		case 16000: question = "aufgeben heißt auf englisch give up. Sage aufgeben auf englisch"; correctAnswer = "give up"; break;
-		case 32000: question = "Mikrowelle heißt auf englisch microwave. Sage Mikrowelle auf englisch"; correctAnswer = "microwave"; break;
-		case 64000: question = "Kopfkissen heißt auf englisch pillow. Sage Kissen auf englisch."; correctAnswer = "pillow"; break;
-		case 125000: question = "Politik heißt auf englisch policy. Sage Politik auf englisch."; correctAnswer = "Policy"; break;
-		case 500000: question = "Gleichgewicht heißt auf englisch balance. Sage Gleichgewicht auf englisch."; correctAnswer = "Balance"; break;
-		}
-	}*/
 	
-	/*private void selectQuestionVokSchwer() {
-		switch(sum){
-		case 0: question = "Bekannter heißt auf englisch acquaintance. Sage Bekannter auf englisch."; correctAnswer = "acquaintance"; break;
-		case 50: question = "rechthaberisch heißt auf englisch bossy. Sage rechthaberisch auf englisch."; correctAnswer = "bossy"; break;
-		case 100: question = "zuversichtlich bedeutet auf englisch confident. Sage zuversichtlich auf englisch."; correctAnswer = "confident"; break;
-		case 200: question = "großherzig bedeutet auf englisch generous. Sage großherzig auf englisch."; correctAnswer = "generous"; break;
-		case 300: question = "Mittelschicht bedeutet auf englisch middle class. Sage Mittelschicht auf englisch."; correctAnswer = "middle class"; break;
-		case 500: question = "Schwiegermutter heißt auf englisch mother in law. Sage Schwiegermutter auf englisch."; correctAnswer = "mother in law"; break;
-		case 1000: question = "launisch heißt auf englisch moody. Sage launisch auf englisch."; correctAnswer = "moody"; break;
-		case 2000: question = "vertrauenswürdig heißt auf englisch reliable. Sage vetrauenswürdig auf englisch."; correctAnswer = "reliable"; break;
-		case 4000: question = "Rechnungswesen heißt auf englisch accountancy. Sage auf englisch Rechnungswesen."; correctAnswer = "accountancy"; break;
-		case 8000: question = "sich bewerben heißt auf englisch apply. Sage sich bewerben auf englisch."; correctAnswer = "apply"; break;
-		case 16000: question = "fließend heißt auf englisch fluently. Sage fließend auf englisch."; correctAnswer = "fluently"; break;
-		case 32000: question = "auf entwas bestehen heißt auf englisch insist. Sage auf entwas bestehen auf englisch"; correctAnswer = "insist"; break;
-		case 64000: question = "Vertreter heißt auf englisch representative. Sage Vertreter auf englisch."; correctAnswer = "representative"; break;
-		case 125000: question = "reibungslos heißt auf englisch smoothly. Sage reibungslos auf englisch."; correctAnswer = "smoothly"; break;
-		case 500000: question = "bereit sein heißt auf englisch be willing to. Sage bereit sein auf englisch"; correctAnswer = "be willing to"; break;
-		}
-	}*/
-	
-	private void selectQuestion2() {
-		switch(questions2){
-		case 0: question2 = "Was bedeutet hallo auf englisch?"; correctAnswer2 = "hello"; break;
-		case 50: question2 = "Was bedeutet Baum auf englisch?"; correctAnswer2 = "tree"; break;
-		case 100: question2 = "Was bedeutet jetzt auf englisch?"; correctAnswer2 = "now"; break;
-		case 200: question2 = "Was bedeutet vielleicht auf englisch?"; correctAnswer2 = "maybe"; break;
-		case 300: question2 = "Was bedeutet heute auf englisch?"; correctAnswer2 = "today"; break;
-		case 500: question2 = "Was bedeutet Hand auf englisch?"; correctAnswer2 = "hand" ; break;
-		case 1000: question2 = "Was bedeutet Haare auf englisch?"; correctAnswer2 = "hair"; break;
-		case 2000: question2 = "Was bedeutet Bein auf englisch?"; correctAnswer2 = "leg"; break;
-		case 4000: question2 = "Frage?"; correctAnswer2 = "today"; break;
-		case 8000: question2 = "Frage?"; correctAnswer2 = "today"; break;
-		case 16000: question2 = "Frage?"; correctAnswer2 = "today"; break;
-		case 32000: question2 = "Frage?"; correctAnswer2 = "today"; break;
-		case 64000: question2 = "Frage?"; correctAnswer2 = "today"; break;
-		case 125000: question2 = "Frage?"; correctAnswer2 = "today"; break;
-		case 500000: question2 = "Frage?"; correctAnswer2 = "today"; break;
-		}
-	}
-	private void selectQuestion3() {
-		switch(questions3){
-		case 0: question3 = "Was bedeutet Reifen auf englisch?"; correctAnswer3 = "wheel"; break;
-		case 50: question3 = "Was bedeutet Bauchnabel auf englisch?"; correctAnswer3 = "bellybutton"; break;
-		case 100: question3 = "Was bedeutet Treppe auf englisch?"; correctAnswer3 = "stairs"; break;
-		case 200: question3 = "Was bedeutet Feld auf englisch?"; correctAnswer3 = "field"; break;
-		case 300: question3 = "Was heißt gebrochen auf englisch?"; correctAnswer3 = "broken"; break;
-		case 500: question3 = "Was heißt Mikrowelle auf englisch?"; correctAnswer3 = "microwave"; break;
-		case 1000: question3 = "Was heißt aufgeben auf englisch?"; correctAnswer3 = "give up"; break;
-		case 2000: question3 = "Was heißt Gemeinschaft auf englisch?"; correctAnswer3 = "community"; break;
-		case 4000: question3 = "Was heißt Sturm auf englisch?"; correctAnswer3 = "gale"; break;
-		case 8000: question3 = "Frage?"; correctAnswer3 = "today"; break;
-		case 16000: question3 = "Frage?"; correctAnswer3 = "today"; break;
-		case 32000: question3 = "Frage?"; correctAnswer3 = "today"; break;
-		case 64000: question3 = "Frage?"; correctAnswer3 = "today"; break;
-		case 125000: question3 = "Frage?"; correctAnswer3 = "today"; break;
-		case 500000: question3 = "Frage?"; correctAnswer3 = "today"; break;
-		}
-	}
-	private void selectQuestion4() {
-		switch(questions4){
-		case 0: question4 = "Was bedeutet rechthaberisch auf englisch?"; correctAnswer4 = "bossy"; break;
-		case 50: question4 = "Was bedeutet Vertreter auf englisch?"; correctAnswer4 = "representative"; break;
-		case 100: question4 = "Was bedeutet fließend auf englisch?"; correctAnswer4 = "fluently"; break;
-		case 200: question4 = "Was bedeutet launisch auf englisch?"; correctAnswer4 = "moody"; break;
-		case 300: question4 = "Was bedeutet Schwiegermutter auf englisch?"; correctAnswer4 = "mother in law"; break;
-		case 500: question4 = "Was bedeutet Mittelschicht auf englisch?"; correctAnswer4 = "middle class"; break;
-		case 1000: question4 = "Frage?"; correctAnswer4 = "today"; break;
-		case 2000: question4 = "Frage?"; correctAnswer4 = "today"; break;
-		case 4000: question4 = "Frage?"; correctAnswer4 = "today"; break;
-		case 8000: question4 = "Frage?"; correctAnswer4 = "today"; break;
-		case 16000: question4 = "Frage?"; correctAnswer4 = "today"; break;
-		case 32000: question4 = "Frage?"; correctAnswer4 = "today"; break;
-		case 64000: question4 = "Frage?"; correctAnswer4 = "today"; break;
-		case 125000: question4 = "Frage?"; correctAnswer4 = "today"; break;
-		case 500000: question4 = "Frage?"; correctAnswer4 = "today"; break;
-		}
-	}
-
-
-
-
-	/*private void selectQuestion() {
+	private void selectQuestion0() {
+	Random r = new Random();
+	int questions = r.nextInt(15);
 		switch(questions){
-		case 0: question = "Hallo bedeutet auf englisch hello. Sage hallo auf englisch."; correctAnswer = "hello"; break;
-		case 50: question = "baum bedeutet auf englisch tree. Sage baum auf englisch."; correctAnswer = "tree"; break;
-		case 100: question = "jetzt bedeutet auf englisch now. Sage jetzt auf englisch."; correctAnswer = "now"; break;
-		case 200: question = "vielleicht bedeutet auf englisch maybe. Sage vielleicht auf englisch."; correctAnswer = "maybe"; break;
-		case 300: question = "heute bedeutet auf englisch today. Sage heute auf englisch."; correctAnswer = "today"; break;
-		case 500: question = "Frage?"; correctAnswer = "today"; break;
-		case 1000: question = "Frage?"; correctAnswer = "today"; break;
-		case 2000: question = "Frage?"; correctAnswer = "today"; break;
-		case 4000: question = "Frage?"; correctAnswer = "today"; break;
-		case 8000: question = "Frage?"; correctAnswer = "today"; break;
-		case 16000: question = "Frage?"; correctAnswer = "today"; break;
-		case 32000: question = "Frage?"; correctAnswer = "today"; break;
-		case 64000: question = "Frage?"; correctAnswer = "today"; break;
-		case 125000: question = "Frage?"; correctAnswer = "today"; break;
-		case 500000: question = "Frage?"; correctAnswer = "today"; break;
+		case 1: question = "Hallo bedeutet auf englisch hello. Sage hallo auf englisch."; correctAnswer = "hello"; correctAnswer = "hey"; break;
+		/*case 2: question = "baum bedeutet auf englisch tree. Sage baum auf englisch."; correctAnswer = "tree"; break;
+		case 3: question = "jetzt bedeutet auf englisch now. Sage jetzt auf englisch."; correctAnswer = "now"; break;
+		case 4: question = "vielleicht bedeutet auf englisch maybe. Sage vielleicht auf englisch."; correctAnswer = "maybe"; break;
+		case 5: question = "heute bedeutet auf englisch today. Sage heute auf englisch."; correctAnswer = "today"; break;
+		case 6: question = "das Essen bedeutet auf englisch food. Sage Essen auf englisch"; correctAnswer = "food"; break;
+		case 7: question = "Kopf bedeutet auf englisch head. Sage Kopf auf englisch."; correctAnswer = "head"; break;
+		case 8: question = "Hand bedeutet auf englisch hand. Sage Hand auf englisch"; correctAnswer = "hand"; break;
+		case 9: question = "Haare bedeutet auf englisch Hair.Sage Haare auf englisch."; correctAnswer = "hair"; break;
+		case 10: question = "Bein bedeutet auf englisch leg. Sage Bein auf englisch."; correctAnswer = "leg"; break;
+		case 11: question = "Sonne bedeutet auf englisch sun. Sage Sonne auf englisch."; correctAnswer = "sun"; break;
+		case 12: question = "Immer bedeutet auf englisch always.Sage immer auf englisch"; correctAnswer = "always"; break;
+		case 13: question = "Wasser bedeutet auf englisch water.Sage Wasser auf englisch"; correctAnswer = "water"; break;
+		case 14: question = "Tisch bedeutet auf englisch table. Sage Tisch auf englisch."; correctAnswer = "table"; break;
+		case 15: question = "Stadt bedeutet auf englisch city. Sage Stadt auf englisch."; correctAnswer = "city"; break;*/
+		}
+	}
+	
+	private void selectQuestion1() {
+		Random r = new Random();
+		int questions1 = r.nextInt(16);
+		switch(questions1){
+		case 1: question1 = "Hallo bedeutet auf englisch hello. Sage hallo auf englisch."; correctAnswer1 = "hello"; break;
+		case 2: question1 = "baum bedeutet auf englisch tree. Sage baum auf englisch."; correctAnswer1 = "tree"; break;
+		case 3: question1 = "jetzt bedeutet auf englisch now. Sage jetzt auf englisch."; correctAnswer1 = "now"; break;
+		case 4: question1 = "vielleicht bedeutet auf englisch maybe. Sage vielleicht auf englisch."; correctAnswer1 = "maybe"; break;
+		case 5: question1 = "heute bedeutet auf englisch today. Sage heute auf englisch."; correctAnswer1 = "today"; break;
+		case 6: question1 = "das Essen bedeutet auf englisch food.Sage Essen auf englisch"; correctAnswer1 = "food"; break;
+		case 7: question1 = "Kopf bedeutet auf englisch head. Sage Kopf auf englisch."; correctAnswer1 = "head"; break;
+		case 8: question1 = "Hand bedeutet auf englisch hand. Sage Hand auf englisch"; correctAnswer1 = "hand"; break;
+		case 9: question1 = "Haare bedeutet auf englisch Hair. Sage Haare auf englisch."; correctAnswer1 = "hair"; break;
+		case 10: question1 = "Bein bedeutet auf englisch leg. Sage Bein auf englisch."; correctAnswer1 = "leg"; break;
+		case 11: question1 = "Sonne bedeutet auf englisch sun. Sage Sonne auf englisch."; correctAnswer1 = "sun"; break;
+		case 12: question1 = "Immer bedeutet auf englisch always. Sage immer auf englisch"; correctAnswer1 = "always"; break;
+		case 13: question1 = "Wasser bedeutet auf englisch water. Sage Wasser auf englisch"; correctAnswer1 = "water"; break;
+		case 14: question1 = "Tisch bedeutet auf englisch table. Sage Tisch auf englisch."; correctAnswer1 = "table"; break;
+		case 15: question1 = "Stadt bedeutet auf englisch city. Sage Stadt auf englisch."; correctAnswer1 = "city"; break;
+		}
+	}
+	
+	private void selectQuestion11() {
+		Random r = new Random();
+		int questions11 = r.nextInt(17);
+		switch(questions11){
+		case 1: question11 = "Hallo bedeutet auf englisch hello. Sage hallo auf englisch."; correctAnswer11 = "hello"; break;
+		case 2: question11 = "baum bedeutet auf englisch tree. Sage baum auf englisch."; correctAnswer11 = "tree"; break;
+		case 3: question11 = "jetzt bedeutet auf englisch now. Sage jetzt auf englisch."; correctAnswer11 = "now"; break;
+		case 4: question11 = "vielleicht bedeutet auf englisch maybe. Sage vielleicht auf englisch."; correctAnswer11 = "maybe"; break;
+		case 5: question11 = "heute bedeutet auf englisch today. Sage heute auf englisch."; correctAnswer11 = "today"; break;
+		case 6: question11 = "das Essen bedeutet auf englisch food.Sage Essen auf englisch"; correctAnswer11 = "food"; break;
+		case 7: question11 = "Kopf bedeutet auf englisch head.Sage Kopf auf englisch."; correctAnswer11 = "head"; break;
+		case 8: question11 = "Hand bedeutet auf englisch hand.Sage Hand auf englisch"; correctAnswer11 = "hand"; break;
+		case 9: question11 = "Haare bedeutet auf englisch Hair.Sage Haare auf englisch."; correctAnswer11 = "hair"; break;
+		case 10: question11 = "Bein bedeutet auf englisch leg. Sage Bein auf englisch."; correctAnswer11 = "leg"; break;
+		case 11: question11 = "Sonne bedeutet auf englisch sun. Sage Sonne auf englisch."; correctAnswer11 = "sun"; break;
+		case 12: question11 = "Immer bedeutet auf englisch always.Sage immer auf englisch"; correctAnswer11 = "always"; break;
+		case 13: question11 = "Wasser bedeutet auf englisch water.Sage Wasser auf englisch"; correctAnswer11 = "water"; break;
+		case 14: question11 = "Tisch bedeutet auf englisch table. Sage Tisch auf englisch."; correctAnswer11 = "table"; break;
+		case 15: question11 = "Stadt bedeutet auf englisch city. Sage Stadt auf englisch."; correctAnswer11 = "city"; break;
 		}
 	}
 	
 	private void selectQuestion2() {
+		Random r = new Random();
+		int questions2 = r.nextInt(8);
 		switch(questions2){
-		case 0: question2 = "Tschüss bedeutet auf englisch bye. Sage tschüss auf englisch. Welcher Spieler weiß die Antwort?"; correctAnswer2 = "bye"; break;
-		case 50: question2 = "baum bedeutet auf englisch tree. Sage baum auf englisch. Welcher Spieler weiß die Antwort?"; correctAnswer2 = "tree"; break;
-		case 100: question2 = "jetzt bedeutet auf englisch now. Sage jetzt auf englisch. Welcher Spieler weiß die Antwort?"; correctAnswer2 = "now"; break;
-		case 200: question2 = "vielleicht bedeutet auf englisch maybe. Sage vielleicht auf englisch. Welcher Spieler weiß die Antwort?"; correctAnswer2 = "maybe"; break;
-		case 300: question2 = "heute bedeutet auf englisch today. Sage heute auf englisch. Welcher Spieler weiß die Antwort?"; correctAnswer2 = "today"; break;
-		case 500: question2 = "Frage?"; correctAnswer2 = "today"; break;
-		case 1000: question2 = "Frage?"; correctAnswer2 = "today"; break;
-		case 2000: question2 = "Frage?"; correctAnswer2 = "today"; break;
-		case 4000: question2 = "Frage?"; correctAnswer2 = "today"; break;
-		case 8000: question2 = "Frage?"; correctAnswer2 = "today"; break;
-		case 16000: question2 = "Frage?"; correctAnswer2 = "today"; break;
-		case 32000: question2 = "Frage?"; correctAnswer2 = "today"; break;
-		case 64000: question2 = "Frage?"; correctAnswer2 = "today"; break;
-		case 125000: question2 = "Frage?"; correctAnswer2 = "today"; break;
-		case 500000: question2 = "Frage?"; correctAnswer2 = "today"; break;
+		case 1: question2 = "Was bedeutet hallo auf englisch?"; correctAnswer2 = "hello"; break;
+		case 2: question2 = "Was bedeutet Baum auf englisch?"; correctAnswer2 = "tree"; break;
+		case 3: question2 = "Was bedeutet jetzt auf englisch?"; correctAnswer2 = "now"; break;
+		case 4: question2 = "Was bedeutet vielleicht auf englisch?"; correctAnswer2 = "maybe"; break;
+		case 5: question2 = "Was bedeutet heute auf englisch?"; correctAnswer2 = "today"; break;
+		case 6: question2 = "Was bedeutet Hand auf englisch?"; correctAnswer2 = "hand" ; break;
+		case 7: question2 = "Was bedeutet Haare auf englisch?"; correctAnswer2 = "hair"; break;
+		case 8: question2 = "Was bedeutet Bein auf englisch?"; correctAnswer2 = "leg"; break;
+		
 		}
 	}
-	
 	private void selectQuestion3() {
+		Random r = new Random();
+		int questions3 = r.nextInt(9);
 		switch(questions3){
-		case 0: question3 = "moin moin bedeutet auf englisch moin moin. Sage moin moin auf englisch. Welcher Spieler weiß die Antwort?"; correctAnswer3 = "moin"; break;
-		case 50: question3 = "baum bedeutet auf englisch tree. Sage baum auf englisch. Welcher Spieler weiß die Antwort?"; correctAnswer3 = "tree"; break;
-		case 100: question3 = "jetzt bedeutet auf englisch now. Sage jetzt auf englisch. Welcher Spieler weiß die Antwort?"; correctAnswer3 = "now"; break;
-		case 200: question3 = "vielleicht bedeutet auf englisch maybe. Sage vielleicht auf englisch. Welcher Spieler weiß die Antwort?"; correctAnswer3 = "maybe"; break;
-		case 300: question3 = "heute bedeutet auf englisch today. Sage heute auf englisch. Welcher Spieler weiß die Antwort?"; correctAnswer3 = "today"; break;
-		case 500: question3 = "Frage?"; correctAnswer3 = "today"; break;
-		case 1000: question3 = "Frage?"; correctAnswer3 = "today"; break;
-		case 2000: question3 = "Frage?"; correctAnswer3 = "today"; break;
-		case 4000: question3 = "Frage?"; correctAnswer3 = "today"; break;
-		case 8000: question3 = "Frage?"; correctAnswer3 = "today"; break;
-		case 16000: question3 = "Frage?"; correctAnswer3 = "today"; break;
-		case 32000: question3 = "Frage?"; correctAnswer3 = "today"; break;
-		case 64000: question3 = "Frage?"; correctAnswer3 = "today"; break;
-		case 125000: question3 = "Frage?"; correctAnswer3 = "today"; break;
-		case 500000: question3 = "Frage?"; correctAnswer3 = "today"; break;
+		case 1: question3 = "Was bedeutet Rad auf englisch?"; correctAnswer3 = "wheel"; break;
+		case 2: question3 = "Was bedeutet Bauchnabel auf englisch?"; correctAnswer3 = "bellybutton"; break;
+		case 3: question3 = "Was bedeutet Treppe auf englisch?"; correctAnswer3 = "stairs"; break;
+		case 4: question3 = "Was bedeutet Feld auf englisch?"; correctAnswer3 = "field"; break;
+		case 5: question3 = "Was heißt gebrochen auf englisch?"; correctAnswer3 = "broken"; break;
+		case 6: question3 = "Was heißt Mikrowelle auf englisch?"; correctAnswer3 = "microwave"; break;
+		case 7: question3 = "Was heißt aufgeben auf englisch?"; correctAnswer3 = "give up"; break;
+		case 8: question3 = "Was heißt Gemeinschaft auf englisch?"; correctAnswer3 = "community"; break;
+		case 9: question3 = "Was heißt Sturm auf englisch?"; correctAnswer3 = "gale"; break;
+		
 		}
 	}
-	
 	private void selectQuestion4() {
+		Random r = new Random();
+		int questions4 = r.nextInt(10);
 		switch(questions4){
-		case 0: question4 = "banane bedeutet auf englisch banana. Sage banane auf englisch. Welcher Spieler weiß die Antwort?"; correctAnswer4 = "banana"; break;
-		case 50: question4 = "baum bedeutet auf englisch tree. Sage baum auf englisch. Welcher Spieler weiß die Antwort?"; correctAnswer4 = "tree"; break;
-		case 100: question4 = "jetzt bedeutet auf englisch now. Sage jetzt auf englisch. Welcher Spieler weiß die Antwort?"; correctAnswer4 = "now"; break;
-		case 200: question4 = "vielleicht bedeutet auf englisch maybe. Sage vielleicht auf englisch. Welcher Spieler weiß die Antwort?"; correctAnswer4 = "maybe"; break;
-		case 300: question4 = "heute bedeutet auf englisch today. Sage heute auf englisch. Welcher Spieler weiß die Antwort?"; correctAnswer4 = "today"; break;
-		case 500: question4 = "Frage?"; correctAnswer4 = "today"; break;
-		case 1000: question4 = "Frage?"; correctAnswer4 = "today"; break;
-		case 2000: question4 = "Frage?"; correctAnswer4 = "today"; break;
-		case 4000: question4 = "Frage?"; correctAnswer4 = "today"; break;
-		case 8000: question4 = "Frage?"; correctAnswer4 = "today"; break;
-		case 16000: question4 = "Frage?"; correctAnswer4 = "today"; break;
-		case 32000: question4 = "Frage?"; correctAnswer4 = "today"; break;
-		case 64000: question4 = "Frage?"; correctAnswer4 = "today"; break;
-		case 125000: question4 = "Frage?"; correctAnswer4 = "today"; break;
-		case 500000: question4 = "Frage?"; correctAnswer4 = "today"; break;
+		case 1: question4 = "Was bedeutet rechthaberisch auf englisch?"; correctAnswer4 = "bossy"; break;
+		case 2: question4 = "Was bedeutet Vertreter auf englisch?"; correctAnswer4 = "representative"; break;
+		case 3: question4 = "Was bedeutet fließend auf englisch?"; correctAnswer4 = "fluently"; break;
+		case 4: question4 = "Was bedeutet launisch auf englisch?"; correctAnswer4 = "moody"; break;
+		case 5: question4 = "Was bedeutet Schwiegermutter auf englisch?"; correctAnswer4 = "mother in law"; break;
+		case 6: question4 = "Was bedeutet Mittelschicht auf englisch?"; correctAnswer4 = "middle class"; break;
+		
 		}
-	}*/
+	}
 
 	@Override
 	public SpeechletResponse onIntent(SpeechletRequestEnvelope<IntentRequest> requestEnvelope)
@@ -359,7 +341,6 @@ implements SpeechletV2
 		logger.info("recState is [" + recState + "]");
 		SpeechletResponse resp = null;
 		switch (recState) {
-		/*case Answer: resp = evaluateAnswer(userRequest); break;*/
 		case OneTwo: resp = evaluateOneTwo(userRequest); break;
 		case VokabelQuiz: resp = evaluateVokabelQuiz(userRequest); break;
 		case YesNo: resp = evaluateYesNo(userRequest); break;
@@ -377,42 +358,50 @@ implements SpeechletV2
 		case YesNoLevel: resp = evaluateYesNoLevel(userRequest); break;
 		case YesNoLevelTwo: resp = evaluateYesNoLevelTwo(userRequest); break;
 		case AgainOrMenu: resp = evaluateAgainOrMenu(userRequest); break;
-		case Weiterquizzen: resp = evaluateWeiterquizzen(userRequest); break;
 		case SingleQuiz: resp = evaluateSingleQuiz(userRequest); break;
-		case YesNoQuiz: resp = evaluateYesNoQuiz(userRequest); break;
-		case YesNoVokabeln: resp = evaluateYesNoVokabeln(userRequest); break;
-		case AnswerVokabeln: resp = evaluateAnswerVokabeln(userRequest); break;
-		case AnswerQuiz: resp = evaluateAnswerQuiz(userRequest); break;
-		/*recState = RecognitionState.Answer; break;*/
+		case YesNoQuizLevelOne: resp = evaluateYesNoQuizLevelOne(userRequest); break;
+		case YesNoQuizLevelTwo: resp = evaluateYesNoQuizLevelTwo(userRequest); break;
+		case YesNoQuizLevelThree: resp = evaluateYesNoQuizLevelThree(userRequest); break;
+		case YesNoQuizLevelEnd: resp = evaluateYesNoQuizLevelEnd(userRequest); break;
+		case YesNoVokabelnEasy: resp = evaluateYesNoVokabelnEasy(userRequest); break;
+		case YesNoVokabelnMedium: resp = evaluateYesNoVokabelnMedium(userRequest); break;
+		case YesNoVokabelnHard: resp = evaluateYesNoVokabelnHard(userRequest); break;
+		case AnswerVokabelnEasy: resp = evaluateAnswerVokabelnEasy(userRequest); break;
+		case AnswerVokabelnMedium: resp = evaluateAnswerVokabelnMedium(userRequest); break;
+		case AnswerVokabelnHard: resp = evaluateAnswerVokabelnHard(userRequest); break;
+		case AnswerQuizLevelOne: resp = evaluateAnswerQuizLevelOne(userRequest); break;
+		case AnswerQuizLevelTwo: resp = evaluateAnswerQuizLevelTwo(userRequest); break;
+		case AnswerQuizLevelThree: resp = evaluateAnswerQuizLevelThree(userRequest); break;
 		default: resp = response("Erkannter Text: " + userRequest);
 		}   
 		return resp;
 	}
 
-	/* Im Vokabelteil: Möchten Sie weitermachen? -> stattdessen Quizzen? */
-	private SpeechletResponse evaluateYesNoVokabeln(String userRequest) {	
+	/* Im Vokabelteil: Möchten Sie resumemachen? -> stattdessen Quizzen? */
+	private SpeechletResponse evaluateYesNoVokabelnEasy(String userRequest) {	
 		SpeechletResponse res = null;
 		recognizeUserIntent(userRequest);
 		switch (ourUserIntent) {
-		case weiter: {
+		case resume: {
 			selectQuestion();
 			res = askUserResponse(question);
-			recState = RecognitionState.AnswerVokabeln; break;
-		} case ja: {
+			recState = RecognitionState.AnswerVokabelnEasy; break;
+		} case yess: {
 			selectQuestion();
 			res = askUserResponse(question);
-			recState = RecognitionState.AnswerVokabeln; break;
+			recState = RecognitionState.AnswerVokabelnEasy; break;
 			
-		} case aufhören: {
-			res = askUserResponse(weiterquizzenMsg);
-			recState = RecognitionState.Weiterquizzen; break;
-		} case nein: {
-			res = askUserResponse(weiterquizzenMsg);
-			recState = RecognitionState.Weiterquizzen; break;
+		} case quit: {
+			res = response(goodbyeMsg); break;
+		} case no: {
+			res = response(goodbyeMsg); break;
 			
-		} case menü: {
+		} case menu: {
 			res = askUserResponse(welcomeMsg);
 			recState = RecognitionState.OneTwo; break;
+		} case difficulty: {
+			res = askUserResponse(difficultyMsg);
+			recState = RecognitionState.Vokabel; break;
 		} default: {
 			res = askUserResponse(errorYesNoMsg);
 		}
@@ -420,29 +409,87 @@ implements SpeechletV2
 		return res;
 	}
 	
-/* Im Quizteil: Möchten Sie weitermachen? -> stattdessen Vokabeln? */
-	
-	private SpeechletResponse evaluateYesNoQuiz(String userRequest) {	
+	private SpeechletResponse evaluateYesNoVokabelnMedium(String userRequest) {	
 		SpeechletResponse res = null;
 		recognizeUserIntent(userRequest);
 		switch (ourUserIntent) {
-		case weiter: {
+		case resume: {
+			selectQuestion1();
+			res = askUserResponse(question1);
+			recState = RecognitionState.AnswerVokabelnMedium; break;
+		} case yess: {
+			selectQuestion1();
+			res = askUserResponse(question1);
+			recState = RecognitionState.AnswerVokabelnMedium; break;
+			
+		} case quit: {
+			res = response(goodbyeMsg); break;
+		} case no: {
+			res = response(goodbyeMsg); break;
+			
+		} case menu: {
+			res = askUserResponse(welcomeMsg);
+			recState = RecognitionState.OneTwo; break;
+		} case difficulty: {
+			res = askUserResponse(difficultyMsg);
+			recState = RecognitionState.Vokabel; break;
+		} default: {
+			res = askUserResponse(errorYesNoMsg);
+		}
+		}
+		return res;
+	}
+	
+	private SpeechletResponse evaluateYesNoVokabelnHard(String userRequest) {	
+		SpeechletResponse res = null;
+		recognizeUserIntent(userRequest);
+		switch (ourUserIntent) {
+		case resume: {
+			selectQuestion11();
+			res = askUserResponse(question11);
+			recState = RecognitionState.AnswerVokabelnHard; break;
+		} case yess: {
+			selectQuestion11();
+			res = askUserResponse(question11);
+			recState = RecognitionState.AnswerVokabelnHard; break;
+			
+		} case quit: {
+			res = response(goodbyeMsg); break;
+		} case no: {
+			res = response(goodbyeMsg); break;
+			
+		} case menu: {
+			res = askUserResponse(welcomeMsg);
+			recState = RecognitionState.OneTwo; break;
+		} case difficulty: {
+			res = askUserResponse(difficultyMsg);
+			recState = RecognitionState.Vokabel; break;
+		} default: {
+			res = askUserResponse(errorYesNoMsg);
+		}
+		}
+		return res;
+	}
+
+	
+	private SpeechletResponse evaluateYesNoQuizLevelOne(String userRequest) {	
+		SpeechletResponse res = null;
+		recognizeUserIntent(userRequest);
+		switch (ourUserIntent) {
+		case resume: {
 			selectQuestion2();
 			res = askUserResponse(question2);
-			recState = RecognitionState.AnswerQuiz; break;
-		} case ja: {
+			recState = RecognitionState.AnswerQuizLevelOne; break;
+		} case yess: {
 			selectQuestion2();
 			res = askUserResponse(question2);
-			recState = RecognitionState.AnswerQuiz; break;
+			recState = RecognitionState.AnswerQuizLevelOne; break;
 			
-		} case aufhören: {
-			res = askUserResponse(weiterVokabelnMsg);
-			recState = RecognitionState.Vokabel; break;
-		} case nein: {
-			res = askUserResponse(weiterVokabelnMsg);
-			recState = RecognitionState.Vokabel; break;
-			
-		} case menü: {
+		} case quit: {
+			res = response(goodbyeMsg); break;
+		} case no: {
+			res = response(goodbyeMsg); break;
+		} case menu: {
 			res = askUserResponse(welcomeMsg);
 			recState = RecognitionState.OneTwo; break;
 			
@@ -453,42 +500,112 @@ implements SpeechletV2
 		return res;
 	}
 	
-	private SpeechletResponse evaluateWeiterquizzen(String userRequest) {
+	private SpeechletResponse evaluateYesNoQuizLevelTwo(String userRequest) {	
 		SpeechletResponse res = null;
 		recognizeUserIntent(userRequest);
 		switch (ourUserIntent) {
-		case quiz: {
-			res = askUserResponse(singleQuizMsg);
-			recState = RecognitionState.SingleQuiz; break;
-		} case beenden: {
-			/*recState = RecognitionState.WhichPlayer;*/
-			res = response(/*buildString(sumMsg, String.valueOf(sum), "")+" "+*/goodbyeMsg); break;
-		} case menü: {
+		case resume: {
+			selectQuestion3();
+			res = askUserResponse(question3);
+			recState = RecognitionState.AnswerQuizLevelTwo; break;
+		} case yess: {
+			selectQuestion3();
+			res = askUserResponse(question3);
+			recState = RecognitionState.AnswerQuizLevelTwo; break;
+			
+		} case quit: {
+			res = response(goodbyeMsg); break;
+		} case no: {
+			res = response(goodbyeMsg); break;
+			
+		} case menu: {
 			res = askUserResponse(welcomeMsg);
 			recState = RecognitionState.OneTwo; break;
+			
 		} default: {
-			res = askUserResponse(errorWeiterquizzen);
+			res = askUserResponse(errorYesNoMsg);
+		}
+		}
+		return res;
+	}
+	
+	private SpeechletResponse evaluateYesNoQuizLevelThree(String userRequest) {	
+		SpeechletResponse res = null;
+		recognizeUserIntent(userRequest);
+		switch (ourUserIntent) {
+		case resume: {
+			selectQuestion4();
+			res = askUserResponse(question4);
+			recState = RecognitionState.AnswerQuizLevelThree; break;
+		} case yess: {
+			selectQuestion4();
+			res = askUserResponse(question4);
+			recState = RecognitionState.AnswerQuizLevelThree; break;
+			
+		} case quit: {
+			res = response(goodbyeMsg); break;
+		} case no: {
+			res = response(goodbyeMsg); break;
+			
+		} case menu: {
+			res = askUserResponse(welcomeMsg);
+			recState = RecognitionState.OneTwo; break;
+			
+		} default: {
+			res = askUserResponse(errorYesNoMsg);
+		}
+		}
+		return res;
+	}
+	
+	private SpeechletResponse evaluateYesNoQuizLevelEnd(String userRequest) {	
+		SpeechletResponse res = null;
+		recognizeUserIntent(userRequest);
+		switch (ourUserIntent) {
+		case resume: {
+			selectQuestion4();
+			res = askUserResponse(question4);
+			recState = RecognitionState.AnswerQuizLevelThree; break;
+		} case yess: {
+			selectQuestion4();
+			res = askUserResponse(question4);
+			recState = RecognitionState.AnswerQuizLevelThree; break;
+			
+		} case quit: {
+			res = response(goodbyeMsg); break;
+		} case no: {
+			res = response(goodbyeMsg); break;
+		} case levelone: {
+			res = askUserResponse(question2);
+			recState = RecognitionState.AnswerQuizLevelOne; break;
+		} case leveltwo: {
+			res = askUserResponse(question3);
+			recState = RecognitionState.AnswerQuizLevelTwo; break;
+			
+		} case menu: {
+			res = askUserResponse(welcomeMsg);
+			recState = RecognitionState.OneTwo; break;
+			
+		} default: {
+			res = askUserResponse(errorYesNoMsg);
 		}
 		}
 		return res;
 	}
 	
 	
-	
-	
-	/*Weiter spielen oder aufhören?*/
+	/*resume spielen oder aufhören?*/
 	private SpeechletResponse evaluateYesNo(String userRequest) {
 		SpeechletResponse res = null;
 		recognizeUserIntent(userRequest);
 		switch (ourUserIntent) {
-		case weiter: {
+		case resume: {
 			selectQuestion();
 			res = askUserResponse(question);
 			recState = RecognitionState.Answer; break;
-		} case beenden: {
-			/*recState = RecognitionState.Answer;*/
-			res = response(/*buildString(sumMsg, String.valueOf(sum), "")+" "+*/goodbyeMsg); break;
-		} case menü: {
+		} case quit: {
+			res = response(goodbyeMsg); break;
+		} case menu: {
 			res = askUserResponse(welcomeMsg);
 			recState = RecognitionState.OneTwo; break;
 		} default: {
@@ -498,19 +615,18 @@ implements SpeechletV2
 		return res;
 	}
 	
-	/*Weiter spielen oder aufhören, Level?*/
+	/*resume spielen oder aufhören, Level?*/
 	private SpeechletResponse evaluateYesNoTwo(String userRequest) {
 		SpeechletResponse res = null;
 		recognizeUserIntent(userRequest);
 		switch (ourUserIntent) {
-		case weiter: {
+		case resume: {
 			selectQuestion2();
 			res = askUserResponse(question2);
 			recState = RecognitionState.WhichPlayer; break;
-		} case beenden: {
-			/*recState = RecognitionState.WhichPlayer;*/
-			res = response(/*buildString(sumMsg, String.valueOf(sum), "")+" "+*/goodbyeMsg); break;
-		} case menü: {
+		} case quit: {
+			res = response(goodbyeMsg); break;
+		} case menu: {
 			res = askUserResponse(welcomeMsg);
 			recState = RecognitionState.OneTwo; break;
 		} default: {
@@ -520,19 +636,18 @@ implements SpeechletV2
 		return res;
 	}
 	
-	/*Weiter spielen oder aufhören, Level?*/
+	/*resume spielen oder aufhören, Level?*/
 	private SpeechletResponse evaluateYesNoLevel(String userRequest) {
 		SpeechletResponse res = null;
 		recognizeUserIntent(userRequest);
 		switch (ourUserIntent) {
-		case weiter: {
+		case resume: {
 			selectQuestion3();
 			res = askUserResponse(question3);
 			recState = RecognitionState.WhichPlayerThree; break;
-		} case beenden: {
-			/*recState = RecognitionState.WhichPlayer;*/
-			res = response(/*buildString(sumMsg, String.valueOf(sum), "")+" "+*/goodbyeMsg); break;
-		} case menü: {
+		} case quit: {
+			res = response(goodbyeMsg); break;
+		} case menu: {
 			res = askUserResponse(welcomeMsg);
 			recState = RecognitionState.OneTwo; break;
 		} default: {
@@ -542,19 +657,18 @@ implements SpeechletV2
 		return res;
 	}
 	
-	/*Weiter spielen oder aufhören, Level?*/
+	/*resume spielen oder aufhören, Level?*/
 	private SpeechletResponse evaluateYesNoLevelTwo(String userRequest) {
 		SpeechletResponse res = null;
 		recognizeUserIntent(userRequest);
 		switch (ourUserIntent) {
-		case weiter: {
+		case resume: {
 			selectQuestion4();
 			res = askUserResponse(question4);
 			recState = RecognitionState.WhichPlayerFour; break;
-		} case beenden: {
-			/*recState = RecognitionState.WhichPlayer;*/
-			res = response(/*buildString(sumMsg, String.valueOf(sum), "")+" "+*/goodbyeMsg); break;
-		} case menü: {
+		} case quit: {
+			res = response(goodbyeMsg); break;
+		} case menu: {
 			res = askUserResponse(welcomeMsg);
 			recState = RecognitionState.OneTwo; break;
 		} default: {
@@ -568,7 +682,7 @@ implements SpeechletV2
 		SpeechletResponse res = null;
 		recognizeUserIntent(userRequest);
 		switch (ourUserIntent) {
-		case nochmal: {
+		case again: {
 			sum = 0;
 			sum2 = 0;
 			sum3 = 0;
@@ -576,17 +690,12 @@ implements SpeechletV2
 			sum5 = 0;
 			sum6 = 0;
 			sum7 = 0;
-			questions = 0;
-			questions2 = 0;
-			questions3 = 0;
-			questions4 = 0;
 			selectQuestion();
 			res = askUserResponse(question);
 			recState = RecognitionState.WhichPlayer; break;
-		} case beenden: {
-			/*recState = RecognitionState.WhichPlayer;*/
-			res = response(/*buildString(sumMsg, String.valueOf(sum), "")+" "+*/goodbyeMsg); break;
-		} case menü: {
+		} case quit: {
+			res = response(goodbyeMsg); break;
+		} case menu: {
 			res = askUserResponse(welcomeMsg);
 			sum = 0;
 			sum2 = 0;
@@ -595,10 +704,6 @@ implements SpeechletV2
 			sum5 = 0;
 			sum6 = 0;
 			sum7 = 0;
-			questions = 0;
-			questions2 = 0;
-			questions3 = 0;
-			questions4 = 0;
 			recState = RecognitionState.OneTwo; break;
 		} default: {
 			res = askUserResponse(errorAgainOrMenuMsg);
@@ -612,10 +717,10 @@ implements SpeechletV2
 		SpeechletResponse res = null;
 		recognizeUserIntent(userRequest);
 		switch (ourUserIntent) {
-		case einer: {
+		case onne: {
 			res = askUserResponse(singleMsg);
 			recState = RecognitionState.VokabelQuiz; break;
-		} case mehrere: {
+		} case twwo: {
 			selectQuestion2();
 			res = askUserResponse(multiMsg+" "+question2);
 			recState = RecognitionState.WhichPlayer; break;
@@ -631,14 +736,14 @@ implements SpeechletV2
 		SpeechletResponse res = null;
 		recognizeUserIntent(userRequest);
 		switch (ourUserIntent) {
-		case vokabeln: {
+		case vocabulary: {
 			res = askUserResponse(difficultyMsg);
 			recState = RecognitionState.Vokabel; break;
 		} case quiz: {
 			selectQuestion2();
 			res = askUserResponse(singleQuizMsg+" "+question2);
-			recState = RecognitionState.AnswerQuiz; break;
-		} case menü: {
+			recState = RecognitionState.AnswerQuizLevelOne; break;
+		} case menu: {
 			res = askUserResponse(welcomeMsg);
 			recState = RecognitionState.OneTwo; break;
 		} default: {
@@ -653,19 +758,19 @@ implements SpeechletV2
 		SpeechletResponse res = null;
 		recognizeUserIntent(userRequest);
 		switch (ourUserIntent) {
-		case einfach: {
+		case easy: {
 			selectQuestion();
 			res = askUserResponse(question);
-			recState = RecognitionState.AnswerVokabeln; break;
-		} case mittel: {
-			selectQuestion();
-			res = askUserResponse(question);
-			recState = RecognitionState.AnswerVokabeln; break;
-		} case schwer: {
-			selectQuestion();
-			res = askUserResponse(question);
-			recState = RecognitionState.AnswerVokabeln; break;
-		} case menü: {
+			recState = RecognitionState.AnswerVokabelnEasy; break;
+		} case medium: {
+			selectQuestion1();
+			res = askUserResponse(question1);
+			recState = RecognitionState.AnswerVokabelnMedium; break;
+		} case hard: {
+			selectQuestion11();
+			res = askUserResponse(question11);
+			recState = RecognitionState.AnswerVokabelnHard; break;
+		} case menu: {
 			res = askUserResponse(welcomeMsg);
 			recState = RecognitionState.OneTwo; break;
 		} default: {
@@ -682,14 +787,14 @@ implements SpeechletV2
 		switch (ourUserIntent) {
 		
 		
-		case ja: {
+		case yess: {
 			selectQuestion2();
 			res = askUserResponse(question2);
 			recState = RecognitionState.AnswerQuiz; break;
 		} 
 		
-		case nein: {
-			res = response(/*buildString(sumMsg, String.valueOf(sum), "")+" "+*/goodbyeMsg); break;
+		case no: {
+			res = response(goodbyeMsg); break;
 		}
 		
 		default: {
@@ -707,10 +812,16 @@ implements SpeechletV2
 		case playerone: {
 			res = askUserResponse(SpielerEinsMsg);
 			recState = RecognitionState.AnswerTwo; break;
+		} case onne: {
+			res = askUserResponse(SpielerEinsMsg);
+			recState = RecognitionState.AnswerTwo; break;
 		} case playertwo: {
 			res = askUserResponse(SpielerZweiMsg);
 			recState = RecognitionState.AnswerThree; break;
-		} case menü: {
+		} case twwo: {
+			res = askUserResponse(SpielerZweiMsg);
+			recState = RecognitionState.AnswerThree; break;
+		} case menu: {
 			res = askUserResponse(welcomeMsg);
 			recState = RecognitionState.OneTwo; break;
 		} default: {
@@ -726,12 +837,18 @@ implements SpeechletV2
 		recognizeUserIntent(userRequest);
 		switch (ourUserIntent) {
 		case playerone: {
-			res = askUserResponse(SpielerEinsMsg);
+			res = askUserResponse(SpielerEinsKurzMsg);
+			recState = RecognitionState.AnswerFour; break;
+		} case onne: {
+			res = askUserResponse(SpielerEinsKurzMsg);
 			recState = RecognitionState.AnswerFour; break;
 		} case playertwo: {
-			res = askUserResponse(SpielerZweiMsg);
+			res = askUserResponse(SpielerZweiKurzMsg);
 			recState = RecognitionState.AnswerFive; break;
-		} case menü: {
+		} case twwo: {
+			res = askUserResponse(SpielerZweiKurzMsg);
+			recState = RecognitionState.AnswerFive; break;
+		} case menu: {
 			res = askUserResponse(welcomeMsg);
 			recState = RecognitionState.OneTwo; break;
 		} default: {
@@ -747,12 +864,18 @@ implements SpeechletV2
 		recognizeUserIntent(userRequest);
 		switch (ourUserIntent) {
 		case playerone: {
-			res = askUserResponse(SpielerEinsMsg);
+			res = askUserResponse(SpielerEinsKurzMsg);
+			recState = RecognitionState.AnswerSix; break;
+		} case onne: {
+			res = askUserResponse(SpielerEinsKurzMsg);
 			recState = RecognitionState.AnswerSix; break;
 		} case playertwo: {
-			res = askUserResponse(SpielerZweiMsg);
+			res = askUserResponse(SpielerZweiKurzMsg);
 			recState = RecognitionState.AnswerSeven; break;
-		} case menü: {
+		} case twwo: {
+			res = askUserResponse(SpielerZweiKurzMsg);
+			recState = RecognitionState.AnswerSeven; break;
+		} case menu: {
 			res = askUserResponse(welcomeMsg);
 			recState = RecognitionState.OneTwo; break;
 		} default: {
@@ -763,33 +886,71 @@ implements SpeechletV2
 	}
 	
 	/*in den Vokabeln*/
-	private SpeechletResponse evaluateAnswerVokabeln(String userRequest) {
+	private SpeechletResponse evaluateAnswerVokabelnEasy(String userRequest) {
 		SpeechletResponse res = null;
-		recognizeUserIntent(userRequest);
-		/*switch (ourUserIntent) {*/
-		/*default :{*/
-			/*if (ourUserIntent.equals(UserIntent.hello)
-					|| ourUserIntent.equals(UserIntent.tree)
-					|| ourUserIntent.equals(UserIntent.now)
-					|| ourUserIntent.equals(UserIntent.maybe)
-					|| ourUserIntent.equals(UserIntent.today)
-					)*/ {
+		recognizeUserIntent(userRequest);{
 				logger.info("User answer ="+ ourUserIntent.name().toLowerCase()+ "/correct answer="+correctAnswer);
 				if (ourUserIntent.name().toLowerCase().equals(correctAnswer)) {
 					logger.info("User answer recognized as correct.");
-					/*increaseSum();*/
-					increaseQuestions();
 					if (sum == 1000000) {
 						res = response(correctMsg+" "+congratsMsg+" "+goodbyeMsg);
 					} else {
-						recState = RecognitionState.YesNoVokabeln;
-						res = askUserResponse(correctMsg/*+" "+buildString(sumMsg, String.valueOf(sum), " ")*/+" "+continueMsg);
-						/*recState = RecognitionState.YesNo;*/
+						recState = RecognitionState.YesNoVokabelnEasy;
+						res = askUserResponse(correctMsg+" "+continueMsg);
 					}
 				} else {
-					increaseQuestions();
-					recState = RecognitionState.YesNoVokabeln;
-					res = askUserResponse(wrongMsg/*+" "+buildString(sumMsg, String.valueOf(sum), " ")*/+" "+continueMsg);
+					recState = RecognitionState.YesNoVokabelnEasy;
+					res = askUserResponse(wrongVocMsg+" "+correctAnswer+". "+continueMsg);
+				}
+			} /*else {
+				res = askUserResponse(errorAnswerMsg);
+			}
+		/*}
+		}*/
+		return res;
+	}
+	
+	/*in den Vokabeln*/
+	private SpeechletResponse evaluateAnswerVokabelnMedium(String userRequest) {
+		SpeechletResponse res = null;
+		recognizeUserIntent(userRequest);{
+				logger.info("User answer ="+ ourUserIntent.name().toLowerCase()+ "/correct answer="+correctAnswer1);
+				if (ourUserIntent.name().toLowerCase().equals(correctAnswer1)) {
+					logger.info("User answer recognized as correct.");
+					if (sum2 == 1000000) {
+						res = response(correctMsg+" "+congratsMsg+" "+goodbyeMsg);
+					} else {
+						recState = RecognitionState.YesNoVokabelnMedium;
+						res = askUserResponse(correctMsg+" "+continueMsg);
+					}
+				} else {
+					recState = RecognitionState.YesNoVokabelnMedium;
+					res = askUserResponse(wrongVocMsg+" "+correctAnswer1+". "+continueMsg);
+				}
+			} /*else {
+				res = askUserResponse(errorAnswerMsg);
+			}
+		/*}
+		}*/
+		return res;
+	}
+	
+	/*in den Vokabeln*/
+	private SpeechletResponse evaluateAnswerVokabelnHard(String userRequest) {
+		SpeechletResponse res = null;
+		recognizeUserIntent(userRequest);{
+				logger.info("User answer ="+ ourUserIntent.name().toLowerCase()+ "/correct answer="+correctAnswer11);
+				if (ourUserIntent.name().toLowerCase().equals(correctAnswer11)) {
+					logger.info("User answer recognized as correct.");
+					if (sum3 == 1000000) {
+						res = response(correctMsg+" "+congratsMsg+" "+goodbyeMsg);
+					} else {
+						recState = RecognitionState.YesNoVokabelnHard;
+						res = askUserResponse(correctMsg+" "+continueMsg);
+					}
+				} else {
+					recState = RecognitionState.YesNoVokabelnHard;
+					res = askUserResponse(wrongVocMsg+" "+correctAnswer11+". "+continueMsg);
 				}
 			} /*else {
 				res = askUserResponse(errorAnswerMsg);
@@ -799,25 +960,53 @@ implements SpeechletV2
 		return res;
 	}
 
-	/*Antworten im Einzelmodus*/
-	private SpeechletResponse evaluateAnswer(String userRequest) {
+	
+	/*im Quiz*/
+	private SpeechletResponse evaluateAnswerQuizLevelOne(String userRequest) {
 		SpeechletResponse res = null;
 		recognizeUserIntent(userRequest);{
-				logger.info("User answer ="+ ourUserIntent.name().toLowerCase()+ "/correct answer="+correctAnswer);
-				if (ourUserIntent.name().toLowerCase().equals(correctAnswer)) {
+				logger.info("User answer ="+ ourUserIntent.name().toLowerCase()+ "/correct answer="+correctAnswer2);
+				if (ourUserIntent.name().toLowerCase().equals(correctAnswer2)) {
 					logger.info("User answer recognized as correct.");
 					increaseSum();
-					increaseQuestions();
-					if (sum == 1000000) {
-						res = response(correctMsg+" "+congratsMsg+" "+goodbyeMsg);
+					if (sum >= 50) {
+						recState = RecognitionState.YesNoQuizLevelTwo;
+						res = askUserResponse(correctMsg+" "+buildString(sumMsg, String.valueOf(sum), " ")+" "+continueEinzelQuizLevelTwoMsg);
 					} else {
-						recState = RecognitionState.YesNo;
+						recState = RecognitionState.YesNoQuizLevelOne;
 						res = askUserResponse(correctMsg+" "+buildString(sumMsg, String.valueOf(sum), " ")+" "+continueMsg);
-						/*recState = RecognitionState.YesNo;*/
+						
 					}
 				} else {
-					increaseQuestions();
-					recState = RecognitionState.YesNo;
+					
+					recState = RecognitionState.YesNoQuizLevelOne;
+					res = askUserResponse(wrongMsg+" "+buildString(sumMsg, String.valueOf(sum), " ")+" "+continueMsg);
+				}
+			} /*else {
+				res = askUserResponse(errorAnswerMsg);
+			}
+		}
+		}*/
+		return res;
+	}
+	
+	/*im Quiz*/
+	private SpeechletResponse evaluateAnswerQuizLevelTwo(String userRequest) {
+		SpeechletResponse res = null;
+		recognizeUserIntent(userRequest);{
+				logger.info("User answer ="+ ourUserIntent.name().toLowerCase()+ "/correct answer="+correctAnswer3);
+				if (ourUserIntent.name().toLowerCase().equals(correctAnswer3)) {
+					logger.info("User answer recognized as correct.");
+					increaseSum();
+					if (sum >= 100) {
+						recState = RecognitionState.YesNoQuizLevelThree;
+						res = askUserResponse(correctMsg+" "+buildString(sumMsg, String.valueOf(sum), " ")+" "+continueEinzelQuizLevelThreeMsg);
+					} else {
+						recState = RecognitionState.YesNoQuizLevelTwo;
+						res = askUserResponse(correctMsg+" "+buildString(sumMsg, String.valueOf(sum), " ")+" "+continueMsg);
+					}
+				} else {
+					recState = RecognitionState.YesNoQuizLevelTwo;
 					res = askUserResponse(wrongMsg+" "+buildString(sumMsg, String.valueOf(sum), " ")+" "+continueMsg);
 				}
 			} /*else {
@@ -829,32 +1018,22 @@ implements SpeechletV2
 	}
 	
 	/*im Quiz*/
-	private SpeechletResponse evaluateAnswerQuiz(String userRequest) {
+	private SpeechletResponse evaluateAnswerQuizLevelThree(String userRequest) {
 		SpeechletResponse res = null;
-		recognizeUserIntent(userRequest);
-		/*switch (ourUserIntent) {*/
-		/*default :{*/
-			/*if (ourUserIntent.equals(UserIntent.hello)
-					|| ourUserIntent.equals(UserIntent.tree)
-					|| ourUserIntent.equals(UserIntent.now)
-					|| ourUserIntent.equals(UserIntent.maybe)
-					|| ourUserIntent.equals(UserIntent.today)
-					)*/ {
-				logger.info("User answer ="+ ourUserIntent.name().toLowerCase()+ "/correct answer="+correctAnswer2);
-				if (ourUserIntent.name().toLowerCase().equals(correctAnswer2)) {
+		recognizeUserIntent(userRequest);{
+				logger.info("User answer ="+ ourUserIntent.name().toLowerCase()+ "/correct answer="+correctAnswer4);
+				if (ourUserIntent.name().toLowerCase().equals(correctAnswer4)) {
 					logger.info("User answer recognized as correct.");
 					increaseSum();
-					increaseQuestions2();
-					if (sum == 1000000) {
-						res = response(correctMsg+" "+congratsMsg+" "+goodbyeMsg);
+					if (sum >= 150) {
+						recState = RecognitionState.YesNoQuizLevelEnd;
+						res = askUserResponse(correctMsg+" "+buildString(sumMsg, String.valueOf(sum), " ")+" "+continueEinzelQuizEndMsg);
 					} else {
-						recState = RecognitionState.YesNoQuiz;
+						recState = RecognitionState.YesNoQuizLevelThree;
 						res = askUserResponse(correctMsg+" "+buildString(sumMsg, String.valueOf(sum), " ")+" "+continueMsg);
-						/*recState = RecognitionState.YesNo;*/
 					}
 				} else {
-					increaseQuestions2();
-					recState = RecognitionState.YesNoQuiz;
+					recState = RecognitionState.YesNoQuizLevelThree;
 					res = askUserResponse(wrongMsg+" "+buildString(sumMsg, String.valueOf(sum), " ")+" "+continueMsg);
 				}
 			} /*else {
@@ -865,6 +1044,12 @@ implements SpeechletV2
 		return res;
 	}
 	
+	
+	
+	
+	
+	
+	
 	/*Mehrspielermodus: Antwort von Spieler eins in Level eins*/
 	private SpeechletResponse evaluateAnswerTwo(String userRequest) {
 		SpeechletResponse res = null;
@@ -874,17 +1059,14 @@ implements SpeechletV2
 				if (ourUserIntent.name().toLowerCase().equals(correctAnswer2)) {
 					logger.info("User answer recognized as correct.");
 					increaseSum2();
-					increaseQuestions2();
-					if (sum2 == 200) {
+					if (sum2 == 40) {
 						recState = RecognitionState.YesNoLevel;
 						res = askUserResponse(correctMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3), " ")+" "+playerOneWins+" "+continueLevelMsg);
 					} else {
 						recState = RecognitionState.YesNoTwo;
 						res = askUserResponse(correctMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3), " ")+" "+continueMsg);
-						/*recState = RecognitionState.YesNo;*/
 					}
 				} else {
-					increaseQuestions2();
 					recState = RecognitionState.YesNoTwo;
 					res = askUserResponse(wrongMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3), " ")+" "+continueMsg);
 				}
@@ -904,19 +1086,16 @@ implements SpeechletV2
 				if (ourUserIntent.name().toLowerCase().equals(correctAnswer3)) {
 					logger.info("User answer recognized as correct.");
 					increaseSum4();
-					increaseQuestions3();
-					if (sum4 >= 200) {
+					if (sum4 >= 40) {
 						recState = RecognitionState.YesNoLevelTwo;
 						res = askUserResponse(correctMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2+sum4), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3+sum5), " ")+" "+playerOneWins+" "+continueLevelTwoMsg);
 					} else {
 						recState = RecognitionState.YesNoLevel;
 						res = askUserResponse(correctMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2+sum4), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3+sum5), " ")+" "+continueMsg);
-						/*recState = RecognitionState.YesNo;*/
 					}
 				} else {
 					decreaseSum4();
 					increaseSum5();
-					increaseQuestions3();
 					recState = RecognitionState.YesNoLevel;
 					res = askUserResponse(wrongMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2+sum4), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3+sum5), " ")+" "+continueMsg);
 				}
@@ -936,17 +1115,14 @@ implements SpeechletV2
 				if (ourUserIntent.name().toLowerCase().equals(correctAnswer4)) {
 					logger.info("User answer recognized as correct.");
 					increaseSum6();
-					increaseQuestions4();
-					if (sum2+sum4+sum6>sum3+sum5+sum7 & sum6 >= 200) {
+					if (sum2+sum4+sum6>sum3+sum5+sum7 & sum6 >= 40) {
 						recState = RecognitionState.AgainOrMenu;
 						res = askUserResponse(correctMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2+sum4+sum6), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3+sum5+sum7), " ")+" "+playerOneWinsGame+" "+againOrMenuMsg);
 					} else {
 						recState = RecognitionState.YesNoLevelTwo;
 						res = askUserResponse(correctMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2+sum4+sum6), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3+sum5+sum7), " ")+" "+continueMsg);
-						/*recState = RecognitionState.YesNo;*/
 					}
 				} else {
-					increaseQuestions4();
 					recState = RecognitionState.YesNoLevelTwo;
 					res = askUserResponse(wrongMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2+sum4+sum6), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3+sum5+sum7), " ")+" "+continueMsg);
 				}
@@ -967,18 +1143,14 @@ implements SpeechletV2
 				if (ourUserIntent.name().toLowerCase().equals(correctAnswer2)) {
 					logger.info("User answer recognized as correct.");
 					increaseSum3();
-					increaseQuestions2();
-					if (sum3 >= 200) {
-						/*res = response(correctMsg+" "+congratsMsg+" "+goodbyeMsg);*/
+					if (sum3 >= 40) {
 						recState = RecognitionState.YesNoLevel;
 						res = askUserResponse(correctMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3), " ")+" "+playerTwoWins+" "+continueLevelMsg);
 					} else {
 						recState = RecognitionState.YesNoTwo;
 						res = askUserResponse(correctMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3), " ")+" "+continueMsg);
-						/*recState = RecognitionState.YesNo;*/
 					}
 				} else {
-					increaseQuestions2();
 					recState = RecognitionState.YesNoTwo;
 					res = askUserResponse(wrongMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3), " ")+" "+continueMsg);
 				}
@@ -998,20 +1170,16 @@ implements SpeechletV2
 				if (ourUserIntent.name().toLowerCase().equals(correctAnswer3)) {
 					logger.info("User answer recognized as correct.");
 					increaseSum5();
-					increaseQuestions3();
-					if (sum5 >= 200) {
-						/*res = response(correctMsg+" "+congratsMsg+" "+goodbyeMsg);*/
+					if (sum5 >= 40) {
 						recState = RecognitionState.YesNoLevelTwo;
 						res = askUserResponse(correctMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2+sum4), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3+sum5), " ")+" "+playerTwoWins+" "+continueLevelTwoMsg);
 					} else {
 						recState = RecognitionState.YesNoLevel;
 						res = askUserResponse(correctMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2+sum4), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3+sum5), " ")+" "+continueMsg);
-						/*recState = RecognitionState.YesNo;*/
 					}
 				} else {
 					decreaseSum5();
 					increaseSum4();
-					increaseQuestions3();
 					recState = RecognitionState.YesNoLevel;
 					res = askUserResponse(wrongMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2+sum4), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3+sum5), " ")+" "+continueMsg);
 				}
@@ -1031,17 +1199,14 @@ implements SpeechletV2
 				if (ourUserIntent.name().toLowerCase().equals(correctAnswer4)) {
 					logger.info("User answer recognized as correct.");
 					increaseSum7();
-					increaseQuestions4();
-					if (sum3+sum5+sum7>sum2+sum4+sum6 & sum7 >= 200) {
+					if (sum3+sum5+sum7>sum2+sum4+sum6 & sum7 >= 40) {
 						recState = RecognitionState.AgainOrMenu;
 						res = askUserResponse(correctMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2+sum4+sum6), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3+sum5+sum7), " ")+" "+playerTwoWinsGame+" "+againOrMenuMsg);
 					} else {
 						recState = RecognitionState.YesNoLevelTwo;
 						res = askUserResponse(correctMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2+sum4+sum6), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3+sum5+sum7), " ")+" "+continueMsg);
-						/*recState = RecognitionState.YesNo;*/
 					}
 				} else {
-					increaseQuestions4();
 					recState = RecognitionState.YesNoLevelTwo;
 					res = askUserResponse(wrongMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2+sum4+sum6), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3+sum5+sum7), " ")+" "+continueMsg);
 				}
@@ -1056,300 +1221,217 @@ implements SpeechletV2
 
 	private void increaseSum() {
 		switch(sum){
-		case 0: sum = 50; break;
-		case 50: sum = 100; break;
-		case 100: sum = 200; break;
-		case 200: sum = 300; break;
-		case 300: sum = 500; break;
-		case 500: sum = 1000; break;
-		case 1000: sum = 2000; break;
-		case 2000: sum = 4000; break;
-		case 4000: sum = 8000; break;
-		case 8000: sum = 16000; break;
-		case 16000: sum = 32000; break;
-		case 32000: sum = 64000; break;
-		case 64000: sum = 125000; break;
-		case 125000: sum = 500000; break;
-		case 500000: sum = 1000000; break;
+		case 0: sum = 10; break;
+		case 10: sum = 20; break;
+		case 20: sum = 30; break;
+		case 30: sum = 40; break;
+		case 40: sum = 50; break;
+		case 50: sum = 60; break;
+		case 60: sum = 70; break;
+		case 70: sum = 80; break;
+		case 80: sum = 90; break;
+		case 90: sum = 100; break;
+		case 100: sum = 110; break;
+		case 110: sum = 120; break;
+		case 120: sum = 130; break;
+		case 130: sum = 140; break;
+		case 140: sum = 150; break;
 		}
 	}
 	
 	private void increaseSum2() {
 		switch(sum2){
-		case 0: sum2 = 50; break;
-		case 50: sum2 = 100; break;
-		case 100: sum2 = 200; break;
-		case 200: sum2 = 300; break;
-		case 300: sum2 = 500; break;
-		case 500: sum2 = 1000; break;
-		case 1000: sum2 = 2000; break;
-		case 2000: sum2 = 4000; break;
-		case 4000: sum2 = 8000; break;
-		case 8000: sum2 = 16000; break;
-		case 16000: sum2 = 32000; break;
-		case 32000: sum2 = 64000; break;
-		case 64000: sum2 = 125000; break;
-		case 125000: sum2 = 500000; break;
-		case 500000: sum2 = 1000000; break;
+		case 0: sum2 = 10; break;
+		case 10: sum2 = 20; break;
+		case 20: sum2 = 30; break;
+		case 30: sum2 = 40; break;
+		case 40: sum2 = 50; break;
+		case 50: sum2 = 60; break;
+		case 60: sum2 = 70; break;
+		case 70: sum2 = 80; break;
+		case 80: sum2 = 90; break;
+		case 90: sum2 = 100; break;
+		case 100: sum2 = 110; break;
+		case 110: sum2 = 120; break;
+		case 120: sum2 = 130; break;
+		case 130: sum2 = 140; break;
+		case 140: sum2 = 150; break;
 		}
 	}
 	
 	private void increaseSum3() {
 		switch(sum3){
-		case 0: sum3 = 50; break;
-		case 50: sum3 = 100; break;
-		case 100: sum3 = 200; break;
-		case 200: sum3 = 300; break;
-		case 300: sum3 = 500; break;
-		case 500: sum3 = 1000; break;
-		case 1000: sum3 = 2000; break;
-		case 2000: sum3 = 4000; break;
-		case 4000: sum3 = 8000; break;
-		case 8000: sum3 = 16000; break;
-		case 16000: sum3 = 32000; break;
-		case 32000: sum3 = 64000; break;
-		case 64000: sum3 = 125000; break;
-		case 125000: sum3 = 500000; break;
-		case 500000: sum3 = 1000000; break;
+		case 0: sum3 = 10; break;
+		case 10: sum3 = 20; break;
+		case 20: sum3 = 30; break;
+		case 30: sum3 = 40; break;
+		case 40: sum3 = 50; break;
+		case 50: sum3 = 60; break;
+		case 60: sum3 = 70; break;
+		case 70: sum3 = 80; break;
+		case 80: sum3 = 90; break;
+		case 90: sum3 = 100; break;
+		case 100: sum3 = 110; break;
+		case 110: sum3 = 120; break;
+		case 120: sum3 = 130; break;
+		case 130: sum3 = 140; break;
+		case 140: sum3 = 150; break;
 		}
 	}
 	
 	private void increaseSum4() {
 		switch(sum4){
-		case 0: sum4 = 50; break;
-		case 50: sum4 = 100; break;
-		case 100: sum4 = 200; break;
-		case 200: sum4 = 300; break;
-		case 300: sum4 = 500; break;
-		case 500: sum4 = 1000; break;
-		case 1000: sum4 = 2000; break;
-		case 2000: sum4 = 4000; break;
-		case 4000: sum4 = 8000; break;
-		case 8000: sum4 = 16000; break;
-		case 16000: sum4 = 32000; break;
-		case 32000: sum4 = 64000; break;
-		case 64000: sum4 = 125000; break;
-		case 125000: sum4 = 500000; break;
-		case 500000: sum4 = 1000000; break;
+		case 0: sum4 = 10; break;
+		case 10: sum4 = 20; break;
+		case 20: sum4 = 30; break;
+		case 30: sum4 = 40; break;
+		case 40: sum4 = 50; break;
+		case 50: sum4 = 60; break;
+		case 60: sum4 = 70; break;
+		case 70: sum4 = 80; break;
+		case 80: sum4 = 90; break;
+		case 90: sum4 = 100; break;
+		case 100: sum4 = 110; break;
+		case 110: sum4 = 120; break;
+		case 120: sum4 = 130; break;
+		case 130: sum4 = 140; break;
+		case 140: sum4 = 150; break;
 		}
 	}
 	
 	private void decreaseSum4() {
 		switch(sum4){
-		case 50: sum4 = 0; break;
-		case 100: sum4 = 50; break;
-		case 200: sum4 = 100; break;
-		case 300: sum4 = 200; break;
-		case 500: sum4 = 300; break;
-		case 1000: sum4 = 500; break;
-		case 2000: sum4 = 1000; break;
-		case 4000: sum4 = 2000; break;
-		case 8000: sum4 = 4000; break;
-		case 16000: sum4 = 8000; break;
-		case 32000: sum4 = 16000; break;
-		case 64000: sum4 = 32000; break;
-		case 125000: sum4 = 64000; break;
-		case 500000: sum4 = 125000; break;
-		case 1000000: sum4 = 500000; break;
+		case 10: sum4 = 0; break;
+		case 20: sum4 = 10; break;
+		case 30: sum4 = 20; break;
+		case 40: sum4 = 30; break;
+		case 50: sum4 = 40; break;
+		case 60: sum4 = 50; break;
+		case 70: sum4 = 60; break;
+		case 80: sum4 = 70; break;
+		case 90: sum4 = 80; break;
+		case 100: sum4 = 90; break;
+		case 110: sum4 = 100; break;
+		case 120: sum4 = 110; break;
+		case 130: sum4 = 120; break;
+		case 140: sum4 = 130; break;
+		case 150: sum4 = 140; break;
 		}
 	}
 	
 	private void increaseSum5() {
 		switch(sum5){
-		case 0: sum5 = 50; break;
-		case 50: sum5 = 100; break;
-		case 100: sum5 = 200; break;
-		case 200: sum5 = 300; break;
-		case 300: sum5 = 500; break;
-		case 500: sum5 = 1000; break;
-		case 1000: sum5 = 2000; break;
-		case 2000: sum5 = 4000; break;
-		case 4000: sum5 = 8000; break;
-		case 8000: sum5 = 16000; break;
-		case 16000: sum5 = 32000; break;
-		case 32000: sum5 = 64000; break;
-		case 64000: sum5 = 125000; break;
-		case 125000: sum5 = 500000; break;
-		case 500000: sum5 = 1000000; break;
+		case 0: sum5 = 10; break;
+		case 10: sum5 = 20; break;
+		case 20: sum5 = 30; break;
+		case 30: sum5 = 40; break;
+		case 40: sum5 = 50; break;
+		case 50: sum5 = 60; break;
+		case 60: sum5 = 70; break;
+		case 70: sum5 = 80; break;
+		case 80: sum5 = 90; break;
+		case 90: sum5 = 100; break;
+		case 100: sum5 = 110; break;
+		case 110: sum5 = 120; break;
+		case 120: sum5 = 130; break;
+		case 130: sum5 = 140; break;
+		case 140: sum5 = 150; break;
 		}
 	}
 	
 	private void decreaseSum5() {
 		switch(sum5){
-		case 50: sum5 = 0; break;
-		case 100: sum5 = 50; break;
-		case 200: sum5 = 100; break;
-		case 300: sum5 = 200; break;
-		case 500: sum5 = 300; break;
-		case 1000: sum5 = 500; break;
-		case 2000: sum5 = 1000; break;
-		case 4000: sum5 = 2000; break;
-		case 8000: sum5 = 4000; break;
-		case 16000: sum5 = 8000; break;
-		case 32000: sum5 = 16000; break;
-		case 64000: sum5 = 32000; break;
-		case 125000: sum5 = 64000; break;
-		case 500000: sum5 = 125000; break;
-		case 1000000: sum5 = 500000; break;
+		case 10: sum5 = 0; break;
+		case 20: sum5 = 10; break;
+		case 30: sum5 = 20; break;
+		case 40: sum5 = 30; break;
+		case 50: sum5 = 40; break;
+		case 60: sum5 = 50; break;
+		case 70: sum5 = 60; break;
+		case 80: sum5 = 70; break;
+		case 90: sum5 = 80; break;
+		case 100: sum5 = 90; break;
+		case 110: sum5 = 100; break;
+		case 120: sum5 = 110; break;
+		case 130: sum5 = 120; break;
+		case 140: sum5 = 130; break;
+		case 150: sum5 = 140; break;
 		}
 	}
 	
 	private void increaseSum6() {
 		switch(sum6){
-		case 0: sum6 = 50; break;
-		case 50: sum6 = 100; break;
-		case 100: sum6 = 200; break;
-		case 200: sum6 = 300; break;
-		case 300: sum6 = 500; break;
-		case 500: sum6 = 1000; break;
-		case 1000: sum6 = 2000; break;
-		case 2000: sum6 = 4000; break;
-		case 4000: sum6 = 8000; break;
-		case 8000: sum6 = 16000; break;
-		case 16000: sum6 = 32000; break;
-		case 32000: sum6 = 64000; break;
-		case 64000: sum6 = 125000; break;
-		case 125000: sum6 = 500000; break;
-		case 500000: sum6 = 1000000; break;
+		case 0: sum6 = 10; break;
+		case 10: sum6 = 20; break;
+		case 20: sum6 = 30; break;
+		case 30: sum6 = 40; break;
+		case 40: sum6 = 50; break;
+		case 50: sum6 = 60; break;
+		case 60: sum6 = 70; break;
+		case 70: sum6 = 80; break;
+		case 80: sum6 = 90; break;
+		case 90: sum6 = 100; break;
+		case 100: sum6 = 110; break;
+		case 110: sum6 = 120; break;
+		case 120: sum6 = 130; break;
+		case 130: sum6 = 140; break;
+		case 140: sum6 = 150; break;
 		}
 	}
 	
 	private void increaseSum7() {
 		switch(sum7){
-		case 0: sum7 = 50; break;
-		case 50: sum7 = 100; break;
-		case 100: sum7 = 200; break;
-		case 200: sum7 = 300; break;
-		case 300: sum7 = 500; break;
-		case 500: sum7 = 1000; break;
-		case 1000: sum7 = 2000; break;
-		case 2000: sum7 = 4000; break;
-		case 4000: sum7 = 8000; break;
-		case 8000: sum7 = 16000; break;
-		case 16000: sum7 = 32000; break;
-		case 32000: sum7 = 64000; break;
-		case 64000: sum7 = 125000; break;
-		case 125000: sum7 = 500000; break;
-		case 500000: sum7 = 1000000; break;
+		case 0: sum7 = 10; break;
+		case 10: sum7 = 20; break;
+		case 20: sum7 = 30; break;
+		case 30: sum7 = 40; break;
+		case 40: sum7 = 50; break;
+		case 50: sum7 = 60; break;
+		case 60: sum7 = 70; break;
+		case 70: sum7 = 80; break;
+		case 80: sum7 = 90; break;
+		case 90: sum7 = 100; break;
+		case 100: sum7 = 110; break;
+		case 110: sum7 = 120; break;
+		case 120: sum7 = 130; break;
+		case 130: sum7 = 140; break;
+		case 140: sum7 = 150; break;
 		}
 	}
 	
-	private void increaseQuestions() {
-		switch(questions){
-		case 0: questions = 50; break;
-		case 50: questions = 100; break;
-		case 100: questions = 200; break;
-		case 200: questions = 300; break;
-		case 300: questions = 500; break;
-		case 500: questions = 1000; break;
-		case 1000: questions = 2000; break;
-		case 2000: questions = 4000; break;
-		case 4000: questions = 8000; break;
-		case 8000: questions = 16000; break;
-		case 16000: questions = 32000; break;
-		case 32000: questions = 64000; break;
-		case 64000: questions = 125000; break;
-		case 125000: questions = 500000; break;
-		case 500000: questions = 1000000; break;
-		case 1000000: questions = 0; break;
-		}
-	}
-	
-	private void increaseQuestions2() {
-		switch(questions2){
-		case 0: questions2 = 50; break;
-		case 50: questions2 = 100; break;
-		case 100: questions2 = 200; break;
-		case 200: questions2 = 300; break;
-		case 300: questions2 = 500; break;
-		case 500: questions2 = 1000; break;
-		case 1000: questions2 = 2000; break;
-		case 2000: questions2 = 4000; break;
-		case 4000: questions2 = 8000; break;
-		case 8000: questions2 = 16000; break;
-		case 16000: questions2 = 32000; break;
-		case 32000: questions2 = 64000; break;
-		case 64000: questions2 = 125000; break;
-		case 125000: questions2 = 500000; break;
-		case 500000: questions2 = 1000000; break;
-		case 1000000: questions2 = 0; break;
-		}
-	}
-	
-	private void increaseQuestions3() {
-		switch(questions3){
-		case 0: questions3 = 50; break;
-		case 50: questions3 = 100; break;
-		case 100: questions3 = 200; break;
-		case 200: questions3 = 300; break;
-		case 300: questions3 = 500; break;
-		case 500: questions3 = 1000; break;
-		case 1000: questions3 = 2000; break;
-		case 2000: questions3 = 4000; break;
-		case 4000: questions3 = 8000; break;
-		case 8000: questions3 = 16000; break;
-		case 16000: questions3 = 32000; break;
-		case 32000: questions3 = 64000; break;
-		case 64000: questions3 = 125000; break;
-		case 125000: questions3 = 500000; break;
-		case 500000: questions3 = 1000000; break;
-		case 1000000: questions3 = 0; break;
-		}
-	}
-	
-	private void increaseQuestions4() {
-		switch(questions4){
-		case 0: questions4 = 50; break;
-		case 50: questions4 = 100; break;
-		case 100: questions4 = 200; break;
-		case 200: questions4 = 300; break;
-		case 300: questions4 = 500; break;
-		case 500: questions4 = 1000; break;
-		case 1000: questions4 = 2000; break;
-		case 2000: questions4 = 4000; break;
-		case 4000: questions4 = 8000; break;
-		case 8000: questions4 = 16000; break;
-		case 16000: questions4 = 32000; break;
-		case 32000: questions4 = 64000; break;
-		case 64000: questions4 = 125000; break;
-		case 125000: questions4 = 500000; break;
-		case 500000: questions4 = 1000000; break;
-		case 1000000: questions4 = 0; break;
-		}
-	}
 
 	
 	 void recognizeUserIntent(String userRequest) {
 		userRequest = userRequest.toLowerCase();
-		String pattern4 = "\\bnow\\b";
-		String pattern5 = "\\btree\\b";
-		String pattern6 = "\\bhello\\b";
-		String pattern7 = "\\bweiter\\b";
-		String pattern8 = "\\baufhören\\b";
-		String pattern9 = "\\bmaybe\\b";
-		String pattern10 = "\\btoday\\b";
-		String pattern11 = "\\beiner\\b";
-		String pattern12 = "\\bmehrere\\b";
-		String pattern13 = "\\bvokabeln\\b";
-		String pattern14 = "\\bquiz\\b";
-		String pattern15 = "\\beinfach\\b";
-		String pattern16 = "\\bmittel\\b";
-		String pattern17 = "\\bschwer\\b";
-		String pattern18 = "\\bplayerone\\b";
-		String pattern19 = "\\bplayertwo\\b";
+		String pattern4 = "(I think )?(the answer is )?(\\bnow\\b)";
+		String pattern5 = "(I think )?(the answer is )?(\\btree\\b)";
+		String pattern6 = "(I think )?(the answer is )?(\\bhello\\b)";
+		String pattern7 = "(I would like to )?(I want to )?(\\bresume\\b)";
+		String pattern8 = "(I would like to )?(I want to )?(\\bleave\\b)";
+		String pattern9 = "(I think )?(the answer is )?(\\bmaybe\\b)";
+		String pattern10 = "(I think )?(the answer is )?(\\btoday\\b)";
+		String pattern11 = "(Player)?(\\bonne\\b)";
+		String pattern12 = "(Player)?(\\btwwo\\b)";
+		String pattern13 = "(I would like to)?(I want to)?(learn)?(\\bvocabulary\\b)";
+		String pattern14 = "(I would like to)?(I want to)?(play)?(\\bquiz\\b)";
+		String pattern15 = "\\beasy\\b";
+		String pattern16 = "\\bmedium\\b";
+		String pattern17 = "\\bhard\\b";
+		String pattern18 = "\\bplayer\\sone\\b";
+		String pattern19 = "\\bplayer\\stwo\\b";
 		String pattern20 = "\\bbye\\b";
-		String pattern21 = "\\bmenü\\b";
+		String pattern21 = "(I want to go)?(Back to the)?(\\bmenu\\b)";
 		String pattern22 = "\\bmoin\\b";
-		String pattern23 = "\\bnextlevel\\b";
-		String pattern24 = "\\bbanana\\b";
-		String pattern25 = "\\bnochmal\\b";
-		String pattern26 = "\\blight\\b";
-		String pattern27 = "\\bbone\\b";
-		String pattern28 = "\\btwo\\b";
-		String pattern29 = "\\bja\\b";
-		String pattern30 = "\\bnein\\b";
+		String pattern23 = "(I want to)?(go to the)?(\\bnext\\slevel\\b)";
+		String pattern24 = "(I think )?(the answer is )?(\\bbanana\\b)";
+		String pattern25 = "(I)?(We)?(want to play)?(\\bagain\\b)";
+		String pattern26 = "(I think )?(the answer is )?(\\blight\\b)";
+		/*String pattern27 = "\\bbone\\b";
+		String pattern28 = "\\btwo\\b";*/
+		String pattern29 = "\\byess\\b";
+		String pattern30 = "\\bno\\b";
 		String pattern31 = "\\bquiz\\b";
-		String pattern32 = "\\bbeenden\\b";
+		String pattern32 = "\\bquit\\b";
 		String pattern33 = "\\bfood\\b";
 		String pattern34 = "\\bhead\\b";
 		String pattern35 = "\\bhair\\b";
@@ -1379,7 +1461,7 @@ implements SpeechletV2
 		String pattern59 = "\\bconfident\\b";
 		String pattern60 = "\\bgenerous\\b";
 		String pattern61 = "\\bmiddleclass\\b";
-		String pattern62 = "\\bmother in law\\b";
+		String pattern62 = "\\bmother\\b\\s\\bin\\b\\s\\blaw\\b";
 		String pattern63 = "\\bmoody\\b";
 		String pattern64 = "\\breliable\\b";
 		String pattern65 = "\\baccountancy\\b";
@@ -1389,6 +1471,14 @@ implements SpeechletV2
 		String pattern69 = "\\brepresentative\\b";
 		String pattern70 = "\\bsmoothly\\b";
 		String pattern71 = "\\bbewillingto\\b";
+		String pattern72 = "\\bdifficulty\\b";
+		String pattern73 = "(I would like to )?(I want to )?(train )?(improve my )?(\\bvocab\\b)(skills )?";
+		
+		String pattern76 = "\\bhand\\b";
+		String pattern77 = "\\bhey\\b";
+		
+		String pattern100 = "\\blevel\\sone\\b";
+		String pattern101 = "\\blevel\\two\\b";
 		
 		
 		
@@ -1439,10 +1529,10 @@ implements SpeechletV2
 		Matcher m25= p25.matcher(userRequest);
 		Pattern p26 = Pattern.compile(pattern26);
 		Matcher m26= p26.matcher(userRequest);
-		Pattern p27 = Pattern.compile(pattern27);
+		/*Pattern p27 = Pattern.compile(pattern27);
 		Matcher m27= p27.matcher(userRequest);
 		Pattern p28 = Pattern.compile(pattern28);
-		Matcher m28= p28.matcher(userRequest);
+		Matcher m28= p28.matcher(userRequest);*/
 		Pattern p29 = Pattern.compile(pattern29);
 		Matcher m29= p29.matcher(userRequest);
 		Pattern p30 = Pattern.compile(pattern30);
@@ -1529,6 +1619,21 @@ implements SpeechletV2
 		Matcher m70 = p70.matcher(userRequest);
 		Pattern p71 = Pattern.compile(pattern71);
 		Matcher m71 = p71.matcher(userRequest);
+		Pattern p72 = Pattern.compile(pattern72);
+		Matcher m72 = p72.matcher(userRequest);
+		Pattern p73 = Pattern.compile(pattern73);
+		Matcher m73 = p73.matcher(userRequest);
+		
+		Pattern p76 = Pattern.compile(pattern76);
+		Matcher m76 = p76.matcher(userRequest);
+		Pattern p77 = Pattern.compile(pattern77);
+		Matcher m77 = p77.matcher(userRequest);
+		
+		
+		Pattern p100 = Pattern.compile(pattern100);
+		Matcher m100 = p100.matcher(userRequest);
+		Pattern p101 = Pattern.compile(pattern101);
+		Matcher m101 = p101.matcher(userRequest);
 		
 		if (m4.find()) {
 			ourUserIntent = UserIntent.now;
@@ -1537,27 +1642,27 @@ implements SpeechletV2
 		} else if (m6.find()) {
 			ourUserIntent = UserIntent.hello;
 		} else if (m7.find()) {
-			ourUserIntent = UserIntent.weiter;
+			ourUserIntent = UserIntent.resume;
 		} else if (m8.find()) {
-			ourUserIntent = UserIntent.aufhören;
+			ourUserIntent = UserIntent.quit;
 		} else if (m9.find()) {
 			ourUserIntent = UserIntent.maybe;
 		} else if (m10.find()) {
 			ourUserIntent = UserIntent.today;
 		} else if (m11.find()) {
-			ourUserIntent = UserIntent.einer;
+			ourUserIntent = UserIntent.onne;
 		} else if (m12.find()) {
-			ourUserIntent = UserIntent.mehrere;
+			ourUserIntent = UserIntent.twwo;
 		} else if (m13.find()) {
-			ourUserIntent = UserIntent.vokabeln;
+			ourUserIntent = UserIntent.vocabulary;
 		} else if (m14.find()) {
 			ourUserIntent = UserIntent.quiz;
 		} else if (m15.find()) {
-			ourUserIntent = UserIntent.einfach;
+			ourUserIntent = UserIntent.easy;
 		} else if (m16.find()) {
-			ourUserIntent = UserIntent.mittel;
+			ourUserIntent = UserIntent.medium;
 		} else if (m17.find()) {
-			ourUserIntent = UserIntent.schwer;
+			ourUserIntent = UserIntent.hard;
 		} else if (m18.find()) {
 			ourUserIntent = UserIntent.playerone;
 		} else if (m19.find()) {
@@ -1565,7 +1670,7 @@ implements SpeechletV2
 		} else if (m20.find()) {
 			ourUserIntent = UserIntent.bye;
 		} else if (m21.find()) {
-			ourUserIntent = UserIntent.menü;
+			ourUserIntent = UserIntent.menu;
 		} else if (m22.find()) {
 			ourUserIntent = UserIntent.moin;
 		} else if (m23.find()) {
@@ -1573,21 +1678,21 @@ implements SpeechletV2
 		} else if (m24.find()) {
 			ourUserIntent = UserIntent.banana;
 		} else if (m25.find()) {
-			ourUserIntent = UserIntent.nochmal;
+			ourUserIntent = UserIntent.again;
 		} else if (m26.find()) {
 			ourUserIntent = UserIntent.light;
-		} else if (m27.find()) {
+		/*} else if (m27.find()) {
 			ourUserIntent = UserIntent.bone;
 		} else if (m28.find()) {
-			ourUserIntent = UserIntent.two;
+			ourUserIntent = UserIntent.twwo;*/
 		} else if (m29.find()) {
-			ourUserIntent = UserIntent.ja;
+			ourUserIntent = UserIntent.yess;
 		} else if (m30.find()) {
-			ourUserIntent = UserIntent.nein;
+			ourUserIntent = UserIntent.no;
 		} else if (m31.find()) {
 			ourUserIntent = UserIntent.quiz;
 		} else if (m32.find()) {
-			ourUserIntent = UserIntent.beenden;
+			ourUserIntent = UserIntent.quit;
 		} else if (m33.find()) {
 			ourUserIntent = UserIntent.food;
 		} else if (m34.find()) {
@@ -1666,6 +1771,20 @@ implements SpeechletV2
 			ourUserIntent = UserIntent.smoothly;
 		} else if (m71.find()) {
 			ourUserIntent = UserIntent.bewillingto;
+		} else if (m72.find()) {
+			ourUserIntent = UserIntent.difficulty;
+		} else if (m73.find()) {
+			ourUserIntent = UserIntent.vocab;
+			
+		} else if (m76.find()) {
+			ourUserIntent = UserIntent.hand;
+		} else if (m77.find()) {
+			ourUserIntent = UserIntent.hey;
+			
+		} else if (m100.find()) {
+			ourUserIntent = UserIntent.levelone;
+		} else if (m101.find()) {
+			ourUserIntent = UserIntent.leveltwo;
 		} else {
 			ourUserIntent = UserIntent.Error;
 		}
