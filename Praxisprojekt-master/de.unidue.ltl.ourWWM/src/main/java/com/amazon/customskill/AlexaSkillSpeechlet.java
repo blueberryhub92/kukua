@@ -10,10 +10,12 @@
 package com.amazon.customskill;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Random;
 
 
 
@@ -44,8 +46,8 @@ import com.amazon.speech.ui.PlainTextOutputSpeech;
 import com.amazon.speech.ui.Reprompt;
 import com.amazon.speech.ui.SsmlOutputSpeech;
 
-import nlp.dkpro.backend.LinguisticPreprocessor;
-import nlp.dkpro.backend.NlpSingleton;
+/*import nlp.dkpro.backend.LinguisticPreprocessor;
+import nlp.dkpro.backend.NlpSingleton;*/
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -60,6 +62,20 @@ import java.sql.SQLException;
 public class AlexaSkillSpeechlet
 implements SpeechletV2
 {
+	public static Connection connect() {
+	    Connection con = null; 
+	    try {
+	      Class.forName("org.sqlite.JDBC");
+	      con = DriverManager.getConnection("jdbc:sqlite:Vokabeln.db"); // connecting to our database
+	      //System.out.println("Connected!");
+	    } catch (ClassNotFoundException | SQLException e ) {
+	      // TODO Auto-generated catch block
+	      //System.out.println(e+"");
+	    }
+	    
+	    return con; 
+	  }
+	
 	static Logger logger = LoggerFactory.getLogger(AlexaSkillSpeechlet.class);
 
 	public static String userRequest;
@@ -147,19 +163,7 @@ implements SpeechletV2
 	}
 
 	
-	public static Connection connect() {
-		    Connection con = null; 
-		    try {
-		      Class.forName("org.sqlite.JDBC");
-		      con = DriverManager.getConnection("jdbc:sqlite:Vokabeln.db"); // connecting to our database
-		      System.out.println("Connected!");
-		    } catch (ClassNotFoundException | SQLException e ) {
-		      // TODO Auto-generated catch block
-		      System.out.println(e+"");
-		    }
-		    
-		    return con; 
-		  }
+	
 		
 
 
@@ -197,23 +201,23 @@ implements SpeechletV2
 		    rs = ps.executeQuery();
 		    /*System.out.println("ALL VOCABULARY\n");*/
 		    while(rs.next()) {
-		      /*int number = rs.getInt("number"); */
+		      /*int number = rs.getInt("number");*/ 
 		      String de = rs.getString("de"); 
 		      String en = rs.getString("en"); 
 		      String Thema = rs.getString("Thema"); 
 		      
-		    question = de; correctAnswer = en;
+		      question = de; correctAnswer = en;
 		      
 		    }
 		  } catch(SQLException e) {
-		    System.out.println(e.toString());
+		    //System.out.println(e.toString());
 		  } finally {
 		    try {
 		      rs.close();
 		      ps.close();
 		      con.close(); 
 		    } catch(SQLException e) {
-		      System.out.println(e.toString());
+		      //System.out.println(e.toString());
 		    }
 		  }
 		  
