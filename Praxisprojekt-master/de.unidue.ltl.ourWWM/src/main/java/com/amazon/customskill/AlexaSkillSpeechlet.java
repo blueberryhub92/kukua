@@ -101,7 +101,7 @@ implements SpeechletV2
 	private static String correctAnswer4 = "";
 	public static enum RecognitionState {YesNoQuizLevelEnd, YesNoQuizLevelOne, YesNoQuizLevelTwo, YesNoQuizLevelThree, YesNoVokabelnEasy, YesNoVokabelnMedium, YesNoVokabelnHard, AnswerQuizLevelOne, AnswerQuizLevelTwo, AnswerQuizLevelThree, AnswerVokabelnEasy, AnswerVokabelnMedium, AnswerVokabelnHard, Answer, AnswerTwo, AnswerThree, AnswerFour, AnswerFive, AnswerSix, AnswerSeven, YesNo, YesNoTwo, YesNoLevel, YesNoLevelTwo, OneTwo, VokabelQuiz, Vokabel, WhichPlayer, WhichPlayerThree, WhichPlayerFour, AgainOrMenu, resumequizzen, SingleQuiz, YesNoQuiz, YesNoVokabeln, AnswerVokabeln, AnswerQuiz};
 	private RecognitionState recState;
-	public static enum UserIntent {hey, hand, vocab, levelone, leveltwo, difficulty, bone, onne, twwo, again, banana, menu, bye, playerone, playertwo, vocabulary, quiz, resume, yess, no, quit, hello, tree, light, now, maybe, today, easy, medium, hard, moin, nextlevel, Error, Quiz, food, head, hair, leg, sun, always, water, table, city, stairs, haircolour, wheel, bellybutton, broken, contract, community, candle, field, gale, giveup, microwave, pillow, policy, balance, acquaintance, bossy, confident, generous, 
+	public static enum UserIntent {corAnswer, hey, hand, vocab, levelone, leveltwo, difficulty, bone, onne, twwo, again, banana, menu, bye, playerone, playertwo, vocabulary, quiz, resume, yess, no, quit, hello, tree, light, now, maybe, today, easy, medium, hard, moin, nextlevel, Error, Quiz, food, head, hair, leg, sun, always, water, table, city, stairs, haircolour, wheel, bellybutton, broken, contract, community, candle, field, gale, giveup, microwave, pillow, policy, balance, acquaintance, bossy, confident, generous, 
 		mother, inlaw, moody, reliable, accountancy, apply, fluently, insist, representative, 
 		smoothly, bewillingto, middleclass, motherinlaw};
 	UserIntent ourUserIntent;
@@ -189,7 +189,13 @@ implements SpeechletV2
 		
 	}
 	
-	private void selectQuestion() {
+	//private String de = "";
+	//private String en = "";
+	//public String a = "";
+	//public String b = "";
+	private String selectQuestion() {
+		//String b = "";
+		//String a = "";
 		
 		Connection con = AlexaSkillSpeechlet.connect(); 
 		  PreparedStatement ps = null; 
@@ -200,18 +206,21 @@ implements SpeechletV2
 		    ps = con.prepareStatement(sql); 
 		    rs = ps.executeQuery();
 		    /*System.out.println("ALL VOCABULARY\n");*/
-		    while(rs.next()) {
-		      /*int number = rs.getInt("number");*/ 
+		    //while(rs.next()) {
+		      /*int number = rs.getInt("number");*/
 		      String de = rs.getString("de"); 
 		      String en = rs.getString("en"); 
 		      String Thema = rs.getString("Thema"); 
 		      
-		      question = de; correctAnswer = en;
-		      
-		    }
+		     question = de; correctAnswer = en;
+		     
+		    //}
 		  } catch(SQLException e) {
 		    //System.out.println(e.toString());
-		  } finally {
+		  } 
+		  //return (rs.getString("de"));
+		  //return (rs.getString("de"));
+		  //finally {
 		    try {
 		      rs.close();
 		      ps.close();
@@ -219,17 +228,31 @@ implements SpeechletV2
 		    } catch(SQLException e) {
 		      //System.out.println(e.toString());
 		    }
+		  
 		  }
+		// return (rs.getString("de"));
 		  
-		  
-		}
+  
+		//}
 	
 	private void selectQuestion0() {
+		String a = "";
+		String b = "";
+		selectQuestion();
+		int questions = 1;
+		//Random r = new Random();
+		//int questions = r.nextInt(1);
+			switch(questions){
+			case 1: question = a; correctAnswer = "hello"; break;
+			}
+		}
+	
+	private void selectQuestion00() {
 	Random r = new Random();
 	int questions = r.nextInt(15);
 		switch(questions){
 		case 1: question = "Hallo bedeutet auf englisch hello. Sage hallo auf englisch."; correctAnswer = "hello"; correctAnswer = "hey"; break;
-		/*case 2: question = "baum bedeutet auf englisch tree. Sage baum auf englisch."; correctAnswer = "tree"; break;
+		case 2: question = "baum bedeutet auf englisch tree. Sage baum auf englisch."; correctAnswer = "tree"; break;
 		case 3: question = "jetzt bedeutet auf englisch now. Sage jetzt auf englisch."; correctAnswer = "now"; break;
 		case 4: question = "vielleicht bedeutet auf englisch maybe. Sage vielleicht auf englisch."; correctAnswer = "maybe"; break;
 		case 5: question = "heute bedeutet auf englisch today. Sage heute auf englisch."; correctAnswer = "today"; break;
@@ -242,16 +265,17 @@ implements SpeechletV2
 		case 12: question = "Immer bedeutet auf englisch always.Sage immer auf englisch"; correctAnswer = "always"; break;
 		case 13: question = "Wasser bedeutet auf englisch water.Sage Wasser auf englisch"; correctAnswer = "water"; break;
 		case 14: question = "Tisch bedeutet auf englisch table. Sage Tisch auf englisch."; correctAnswer = "table"; break;
-		case 15: question = "Stadt bedeutet auf englisch city. Sage Stadt auf englisch."; correctAnswer = "city"; break;*/
+		case 15: question = "Stadt bedeutet auf englisch city. Sage Stadt auf englisch."; correctAnswer = "city"; break;
 		}
 	}
 	
 	private void selectQuestion1() {
-		Random r = new Random();
-		int questions1 = r.nextInt(16);
+		//Random r = new Random();
+		//int questions1 = r.nextInt(16);
+		int questions1 = 1;
 		switch(questions1){
 		case 1: question1 = "Hallo bedeutet auf englisch hello. Sage hallo auf englisch."; correctAnswer1 = "hello"; break;
-		case 2: question1 = "baum bedeutet auf englisch tree. Sage baum auf englisch."; correctAnswer1 = "tree"; break;
+		/*case 2: question1 = "baum bedeutet auf englisch tree. Sage baum auf englisch."; correctAnswer1 = "tree"; break;
 		case 3: question1 = "jetzt bedeutet auf englisch now. Sage jetzt auf englisch."; correctAnswer1 = "now"; break;
 		case 4: question1 = "vielleicht bedeutet auf englisch maybe. Sage vielleicht auf englisch."; correctAnswer1 = "maybe"; break;
 		case 5: question1 = "heute bedeutet auf englisch today. Sage heute auf englisch."; correctAnswer1 = "today"; break;
@@ -265,6 +289,7 @@ implements SpeechletV2
 		case 13: question1 = "Wasser bedeutet auf englisch water. Sage Wasser auf englisch"; correctAnswer1 = "water"; break;
 		case 14: question1 = "Tisch bedeutet auf englisch table. Sage Tisch auf englisch."; correctAnswer1 = "table"; break;
 		case 15: question1 = "Stadt bedeutet auf englisch city. Sage Stadt auf englisch."; correctAnswer1 = "city"; break;
+		case 16: question1 = "Stadt bedeutet auf englisch city. Sage Stadt auf englisch."; correctAnswer1 = "butterbrot"; break;*/
 		}
 	}
 	
@@ -896,21 +921,13 @@ implements SpeechletV2
 				logger.info("User answer ="+ ourUserIntent.name().toLowerCase()+ "/correct answer="+correctAnswer);
 				if (ourUserIntent.name().toLowerCase().equals(correctAnswer)) {
 					logger.info("User answer recognized as correct.");
-					if (sum == 1000000) {
-						res = response(correctMsg+" "+congratsMsg+" "+goodbyeMsg);
-					} else {
 						recState = RecognitionState.YesNoVokabelnEasy;
 						res = askUserResponse(correctMsg+" "+continueMsg);
-					}
 				} else {
 					recState = RecognitionState.YesNoVokabelnEasy;
 					res = askUserResponse(wrongVocMsg+" "+correctAnswer+". "+continueMsg);
 				}
-			} /*else {
-				res = askUserResponse(errorAnswerMsg);
 			}
-		/*}
-		}*/
 		return res;
 	}
 	
@@ -921,21 +938,13 @@ implements SpeechletV2
 				logger.info("User answer ="+ ourUserIntent.name().toLowerCase()+ "/correct answer="+correctAnswer1);
 				if (ourUserIntent.name().toLowerCase().equals(correctAnswer1)) {
 					logger.info("User answer recognized as correct.");
-					if (sum2 == 1000000) {
-						res = response(correctMsg+" "+congratsMsg+" "+goodbyeMsg);
-					} else {
 						recState = RecognitionState.YesNoVokabelnMedium;
 						res = askUserResponse(correctMsg+" "+continueMsg);
-					}
 				} else {
 					recState = RecognitionState.YesNoVokabelnMedium;
 					res = askUserResponse(wrongVocMsg+" "+correctAnswer1+". "+continueMsg);
 				}
-			} /*else {
-				res = askUserResponse(errorAnswerMsg);
-			}
-		/*}
-		}*/
+			} 
 		return res;
 	}
 	
@@ -946,21 +955,13 @@ implements SpeechletV2
 				logger.info("User answer ="+ ourUserIntent.name().toLowerCase()+ "/correct answer="+correctAnswer11);
 				if (ourUserIntent.name().toLowerCase().equals(correctAnswer11)) {
 					logger.info("User answer recognized as correct.");
-					if (sum3 == 1000000) {
-						res = response(correctMsg+" "+congratsMsg+" "+goodbyeMsg);
-					} else {
 						recState = RecognitionState.YesNoVokabelnHard;
 						res = askUserResponse(correctMsg+" "+continueMsg);
-					}
 				} else {
 					recState = RecognitionState.YesNoVokabelnHard;
 					res = askUserResponse(wrongVocMsg+" "+correctAnswer11+". "+continueMsg);
 				}
-			} /*else {
-				res = askUserResponse(errorAnswerMsg);
-			}
-		/*}
-		}*/
+			} 
 		return res;
 	}
 
@@ -986,11 +987,7 @@ implements SpeechletV2
 					recState = RecognitionState.YesNoQuizLevelOne;
 					res = askUserResponse(wrongMsg+" "+buildString(sumMsg, String.valueOf(sum), " ")+" "+continueMsg);
 				}
-			} /*else {
-				res = askUserResponse(errorAnswerMsg);
-			}
-		}
-		}*/
+			} 
 		return res;
 	}
 	
@@ -1013,11 +1010,7 @@ implements SpeechletV2
 					recState = RecognitionState.YesNoQuizLevelTwo;
 					res = askUserResponse(wrongMsg+" "+buildString(sumMsg, String.valueOf(sum), " ")+" "+continueMsg);
 				}
-			} /*else {
-				res = askUserResponse(errorAnswerMsg);
-			}
-		/*}
-		}*/
+			} 
 		return res;
 	}
 	
@@ -1040,26 +1033,16 @@ implements SpeechletV2
 					recState = RecognitionState.YesNoQuizLevelThree;
 					res = askUserResponse(wrongMsg+" "+buildString(sumMsg, String.valueOf(sum), " ")+" "+continueMsg);
 				}
-			} /*else {
-				res = askUserResponse(errorAnswerMsg);
-			}
-		/*}
-		}*/
+			} 
 		return res;
 	}
-	
-	
-	
-	
-	
-	
+
 	
 	/*Mehrspielermodus: Antwort von Spieler eins in Level eins*/
 	private SpeechletResponse evaluateAnswerTwo(String userRequest) {
 		SpeechletResponse res = null;
 		recognizeUserIntent(userRequest);{
 				logger.info("User answer ="+ ourUserIntent.name().toLowerCase()+ "/correct answer="+correctAnswer2);
-				
 				if (ourUserIntent.name().toLowerCase().equals(correctAnswer2)) {
 					logger.info("User answer recognized as correct.");
 					increaseSum2();
@@ -1074,11 +1057,7 @@ implements SpeechletV2
 					recState = RecognitionState.YesNoTwo;
 					res = askUserResponse(wrongMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3), " ")+" "+continueMsg);
 				}
-			} /*else {
-				res = askUserResponse(errorAnswerMsg);
-			}
-		/*}
-		}*/
+			} 
 				return res;
 	}
 	
@@ -1103,11 +1082,7 @@ implements SpeechletV2
 					recState = RecognitionState.YesNoLevel;
 					res = askUserResponse(wrongMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2+sum4), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3+sum5), " ")+" "+continueMsg);
 				}
-			} /*else {
-				res = askUserResponse(errorAnswerMsg);
-			}
-		/*}
-		}*/
+			} 
 				return res;
 	}
 	
@@ -1130,11 +1105,7 @@ implements SpeechletV2
 					recState = RecognitionState.YesNoLevelTwo;
 					res = askUserResponse(wrongMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2+sum4+sum6), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3+sum5+sum7), " ")+" "+continueMsg);
 				}
-			} /*else {
-				res = askUserResponse(errorAnswerMsg);
-			}
-		/*}
-		}*/
+			} 
 				return res;
 	}
 	
@@ -1158,11 +1129,7 @@ implements SpeechletV2
 					recState = RecognitionState.YesNoTwo;
 					res = askUserResponse(wrongMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3), " ")+" "+continueMsg);
 				}
-			} /*else {
-				res = askUserResponse(errorAnswerMsg);
-			}
-		/*}
-		}*/
+			} 
 				return res;
 	}
 	
@@ -1187,11 +1154,7 @@ implements SpeechletV2
 					recState = RecognitionState.YesNoLevel;
 					res = askUserResponse(wrongMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2+sum4), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3+sum5), " ")+" "+continueMsg);
 				}
-			} /*else {
-				res = askUserResponse(errorAnswerMsg);
-			}
-		/*}
-		}*/
+			} 
 				return res;
 	}
 	
@@ -1214,11 +1177,7 @@ implements SpeechletV2
 					recState = RecognitionState.YesNoLevelTwo;
 					res = askUserResponse(wrongMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2+sum4+sum6), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3+sum5+sum7), " ")+" "+continueMsg);
 				}
-			} /*else {
-				res = askUserResponse(errorAnswerMsg);
-			}
-		/*}
-		}*/
+			} 
 				return res;
 	}
 
@@ -1405,88 +1364,90 @@ implements SpeechletV2
 	
 
 	
-	 void recognizeUserIntent(String userRequest) {
+	void recognizeUserIntent(String userRequest) {
 		userRequest = userRequest.toLowerCase();
-		String pattern4 = "(I think )?(the answer is )?(\\bnow\\b)";
-		String pattern5 = "(I think )?(the answer is )?(\\btree\\b)";
-		String pattern6 = "(I think )?(the answer is )?(\\bhello\\b)";
-		String pattern7 = "(I would like to )?(I want to )?(\\bresume\\b)";
-		String pattern8 = "(I would like to )?(I want to )?(\\bleave\\b)";
-		String pattern9 = "(I think )?(the answer is )?(\\bmaybe\\b)";
-		String pattern10 = "(I think )?(the answer is )?(\\btoday\\b)";
-		String pattern11 = "(Player)?(\\bonne\\b)";
-		String pattern12 = "(Player)?(\\btwwo\\b)";
-		String pattern13 = "(I would like to)?(I want to)?(learn)?(\\bvocabulary\\b)";
-		String pattern14 = "(I would like to)?(I want to)?(play)?(\\bquiz\\b)";
-		String pattern15 = "\\beasy\\b";
-		String pattern16 = "\\bmedium\\b";
-		String pattern17 = "\\bhard\\b";
-		String pattern18 = "\\bplayer\\sone\\b";
-		String pattern19 = "\\bplayer\\stwo\\b";
-		String pattern20 = "\\bbye\\b";
-		String pattern21 = "(I want to go)?(Back to the)?(\\bmenu\\b)";
+		//String pattern3 = correctAnswer1;
+		String pattern4 = "(.*)?(\\bnow\\b)(.*)?";
+		String pattern5 = "(.*)?(\\btree\\b)(.*)?";
+		String pattern6 = "(.*)?(\\bhello\\b)(.*)?";
+		String pattern7 = "(.*)?(\\bresume\\b)(.*)?";
+		String pattern8 = "(.*)?(\\bleave\\b)(.*)?";
+		String pattern9 = "(.*)?(\\bmaybe\\b)(.*)?";
+		String pattern10 = "(.*)?(\\btoday\\b)(.*)?";
+		String pattern11 = "(.*)?(\\bonne\\b)(.*)?";
+		String pattern12 = "(.*)?(\\btwwo\\b)(.*)?";
+		String pattern13 = "(.*)?(\\bvocabulary\\b)(.*)?";
+		String pattern14 = "(.*)?(\\bquiz\\b)(.*)?";
+		String pattern15 = "(.*)?(\\beasy\\b)(.*)?";
+		String pattern16 = "(.*)?(\\bmedium\\b)(.*)?";
+		String pattern17 = "(.*)?(\\bhard\\b)(.*)?";
+		String pattern18 = "(.*)?(bonne\\b)(.*)?";
+		String pattern19 = "(.*)?(\\btwwo\\b)(.*)?";
+		String pattern20 = "(.*)?(\\bbye\\b)(.*)?";
+		String pattern21 = "(.*)?(\\bmenu\\b)(.*)?";
 		String pattern22 = "\\bmoin\\b";
-		String pattern23 = "(I want to)?(go to the)?(\\bnext\\slevel\\b)";
-		String pattern24 = "(I think )?(the answer is )?(\\bbanana\\b)";
-		String pattern25 = "(I)?(We)?(want to play)?(\\bagain\\b)";
-		String pattern26 = "(I think )?(the answer is )?(\\blight\\b)";
+		String pattern23 = "(.*)?(next)?(\\blevel\\b)(.*)?";
+		String pattern24 = "(.*)?(\\bbanana\\b)(.*)?";
+		String pattern25 = "(.*)?(\\bagain\\b)(.*)?";
+		String pattern26 = "(.*)?(\\blight\\b)(.*)?";
 		/*String pattern27 = "\\bbone\\b";
 		String pattern28 = "\\btwo\\b";*/
-		String pattern29 = "\\byess\\b";
-		String pattern30 = "\\bno\\b";
-		String pattern31 = "\\bquiz\\b";
-		String pattern32 = "\\bquit\\b";
-		String pattern33 = "\\bfood\\b";
-		String pattern34 = "\\bhead\\b";
-		String pattern35 = "\\bhair\\b";
-		String pattern36 = "\\bleg\\b";
-		String pattern37 = "\\bsun\\b";
-		String pattern38 = "\\balways\\b";
-		String pattern39 = "\\bwater\\b";
-		String pattern40 = "\\btable\\b";
-		String pattern41 = "\\bcity\\b";
-		String pattern42 = "\\bstairs\\b";
-		String pattern43 = "\\bhaircolour\\b";
-		String pattern44 = "\\bwheel\\b";
-		String pattern45 = "\\bbellybutton\\b";
-		String pattern46 = "\\bbroken\\b";
-		String pattern47 = "\\bcontract\\b";
-		String pattern48 = "\\bcommunity\\b";
-		String pattern49 = "\\bcandle\\b";
-		String pattern50 = "\\bfield\\b";
-		String pattern51 = "\\bgale\\b";
-		String pattern52 = "\\bgive up\\b";
-		String pattern53 = "\\bmicrowave\\b";
-		String pattern54 = "\\bpillow\\b";
-		String pattern55 = "\\bpolicy\\b";
-		String pattern56 = "\\bbalance\\b";
-		String pattern57 = "\\bacquaintance\\b";
-		String pattern58 = "\\bbossy\\b";
-		String pattern59 = "\\bconfident\\b";
-		String pattern60 = "\\bgenerous\\b";
-		String pattern61 = "\\bmiddleclass\\b";
-		String pattern62 = "\\bmother\\b\\s\\bin\\b\\s\\blaw\\b";
-		String pattern63 = "\\bmoody\\b";
-		String pattern64 = "\\breliable\\b";
-		String pattern65 = "\\baccountancy\\b";
-		String pattern66 = "\\bapply\\b";
-		String pattern67 = "\\bfluently\\b";
-		String pattern68 = "\\binsist\\b";
-		String pattern69 = "\\brepresentative\\b";
-		String pattern70 = "\\bsmoothly\\b";
-		String pattern71 = "\\bbewillingto\\b";
-		String pattern72 = "\\bdifficulty\\b";
-		String pattern73 = "(I would like to )?(I want to )?(train )?(improve my )?(\\bvocab\\b)(skills )?";
+		String pattern29 = "(.*)?(\\byess\\b)(.*)?";
+		String pattern30 = "(.*)?(\\bno\\b)(.*)?";
+		String pattern31 = "(.*)?(\\bquiz\\b)(.*)?";
+		String pattern32 = "(.*)?(\\bquit\\b)(.*)?";
+		String pattern33 = "(.*)?(\\bfood\\b)(.*)?";
+		String pattern34 = "(.*)?(\\bhead\\b)(.*)?";
+		String pattern35 = "(.*)?(\\bhair\\b)(.*)?";
+		String pattern36 = "(.*)?(\\bleg\\b)(.*)?";
+		String pattern37 = "(.*)?(\\bsun\\b)(.*)?";
+		String pattern38 = "(.*)?(\\balways\\b)(.*)?";
+		String pattern39 = "(.*)?(\\bwater\\b)(.*)?";
+		String pattern40 = "(.*)?(\\btable\\b)(.*)?";
+		String pattern41 = "(.*)?(\\bcity\\b)(.*)?";
+		String pattern42 = "(.*)?(\\bstairs\\b)(.*)?";
+		String pattern43 = "(.*)?(\\bhaircolour\\b)(.*)?";
+		String pattern44 = "(.*)?(\\bwheel\\b)(.*)?";
+		String pattern45 = "(.*)?(\\bbellybutton\\b)(.*)?";
+		String pattern46 = "(.*)?(\\bbroken\\b)(.*)?";
+		String pattern47 = "(.*)?(\\bcontract\\b)(.*)?";
+		String pattern48 = "(.*)?(\\bcommunity\\b)(.*)?";
+		String pattern49 = "(.*)?(\\bcandle\\b)(.*)?";
+		String pattern50 = "(.*)?(\\bfield\\b)(.*)?";
+		String pattern51 = "(.*)?(\\bgale\\b)(.*)?";
+		String pattern52 = "(.*)?(\\bgive up\\b)(.*)?";
+		String pattern53 = "(.*)?(\\bmicrowave\\b)(.*)?";
+		String pattern54 = "(.*)?(\\bpillow\\b)(.*)?";
+		String pattern55 = "(.*)?(\\bpolicy\\b)(.*)?";
+		String pattern56 = "(.*)?(\\bbalance\\b)(.*)?";
+		String pattern57 = "(.*)?(\\bacquaintance\\b)(.*)?";
+		String pattern58 = "(.*)?(\\bbossy\\b)(.*)?";
+		String pattern59 = "(.*)?(\\bconfident\\b)(.*)?";
+		String pattern60 = "(.*)?(\\bgenerous\\b(.*)?)";
+		String pattern61 = "(.*)?(\\bmiddleclass\\b)(.*)?";
+		String pattern62 = "(.*)?(\\bmother\\b\\s\\bin\\b\\s\\blaw\\b)(.*)?";
+		String pattern63 = "(.*)?(\\bmoody\\b)(.*)?";
+		String pattern64 = "(.*)?(\\breliable\\b)(.*)?";
+		String pattern65 = "(.*)?(\\baccountancy\\b)(.*)?";
+		String pattern66 = "(.*)?(\\bapply\\b)(.*)?";
+		String pattern67 = "(.*)?(\\bfluently\\b)(.*)?";
+		String pattern68 = "(.*)?(\\binsist\\b)(.*)?";
+		String pattern69 = "(.*)?(\\brepresentative\\b)(.*)?";
+		String pattern70 = "(.*)?(\\bsmoothly\\b)(.*)?";
+		String pattern71 = "(.*)?(\\bbe\\swilling\\sto\\b)(.*)?";
+		String pattern72 = "(.*)?(\\bdifficulty\\b)(.*)?";
+		String pattern73 = "(.*)?(\\bvocab\\b)(.*)?";
 		
-		String pattern76 = "\\bhand\\b";
-		String pattern77 = "\\bhey\\b";
+		String pattern76 = "(.*)?(\\bhand\\b)(.*)?";
+		String pattern77 = "(.*)?(\\bhey\\b)(.*)?";
 		
-		String pattern100 = "\\blevel\\sone\\b";
-		String pattern101 = "\\blevel\\two\\b";
+		String pattern100 = "(.*)?(\\blevel\\sone\\b)(.*)?";
+		String pattern101 = "(.*)?(\\blevel\\two\\b)(.*)?";
 		
 		
 		
-
+		//Pattern p3 = Pattern.compile(pattern3);
+		//Matcher m3 = p3.matcher(userRequest);
 		Pattern p4 = Pattern.compile(pattern4);
 		Matcher m4 = p4.matcher(userRequest);
 		Pattern p5 = Pattern.compile(pattern5);
@@ -1641,6 +1602,8 @@ implements SpeechletV2
 		
 		if (m4.find()) {
 			ourUserIntent = UserIntent.now;
+		//} else if (m3.find()) {
+		//	ourUserIntent = UserIntent.corAnswer;
 		} else if (m5.find()) {
 			ourUserIntent = UserIntent.tree;
 		} else if (m6.find()) {
@@ -1794,6 +1757,7 @@ implements SpeechletV2
 		}
 		logger.info("set ourUserIntent to " +ourUserIntent);
 	}
+
 
 
 
