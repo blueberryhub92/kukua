@@ -193,7 +193,7 @@ implements SpeechletV2
 	//private String en = "";
 	//public String a = "";
 	//public String b = "";
-	private String selectQuestion() {
+	private void selectQuestion0() {
 		//String b = "";
 		//String a = "";
 		
@@ -212,7 +212,11 @@ implements SpeechletV2
 		      String en = rs.getString("en"); 
 		      String Thema = rs.getString("Thema"); 
 		      
-		     question = de; correctAnswer = en;
+		     //question = de; correctAnswer = en;
+		      	int questions = 1;
+		      		switch(questions){
+		      		case 1: question = de; correctAnswer = en; break;
+		      		}
 		     
 		    //}
 		  } catch(SQLException e) {
@@ -221,21 +225,23 @@ implements SpeechletV2
 		  //return (rs.getString("de"));
 		  //return (rs.getString("de"));
 		  //finally {
-		    try {
+		    /*try {
 		      rs.close();
 		      ps.close();
 		      con.close(); 
 		    } catch(SQLException e) {
 		      //System.out.println(e.toString());
 		    }
+		    
+				}*/
 		  
-		  }
+		  //}
 		// return (rs.getString("de"));
 		  
   
-		//}
+		}
 	
-	private void selectQuestion0() {
+	private void selectQuestion() {
 		String a = "";
 		String b = "";
 		selectQuestion();
