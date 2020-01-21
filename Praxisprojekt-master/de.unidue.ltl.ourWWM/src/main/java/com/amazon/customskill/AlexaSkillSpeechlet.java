@@ -10,6 +10,7 @@
 package com.amazon.customskill;
 
 import java.sql.Connection;
+
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -48,10 +49,6 @@ import com.amazon.speech.ui.SsmlOutputSpeech;
 
 /*import nlp.dkpro.backend.LinguisticPreprocessor;
 import nlp.dkpro.backend.NlpSingleton;*/
-
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
 
 
 
@@ -101,7 +98,7 @@ implements SpeechletV2
 	private static String correctAnswer4 = "";
 	public static enum RecognitionState {YesNoQuizLevelEnd, YesNoQuizLevelOne, YesNoQuizLevelTwo, YesNoQuizLevelThree, YesNoVokabelnEasy, YesNoVokabelnMedium, YesNoVokabelnHard, AnswerQuizLevelOne, AnswerQuizLevelTwo, AnswerQuizLevelThree, AnswerVokabelnEasy, AnswerVokabelnMedium, AnswerVokabelnHard, Answer, AnswerTwo, AnswerThree, AnswerFour, AnswerFive, AnswerSix, AnswerSeven, YesNo, YesNoTwo, YesNoLevel, YesNoLevelTwo, OneTwo, VokabelQuiz, Vokabel, WhichPlayer, WhichPlayerThree, WhichPlayerFour, AgainOrMenu, resumequizzen, SingleQuiz, YesNoQuiz, YesNoVokabeln, AnswerVokabeln, AnswerQuiz};
 	private RecognitionState recState;
-	public static enum UserIntent {corAnswer, hey, hand, vocab, levelone, leveltwo, difficulty, bone, onne, twwo, again, banana, menu, bye, playerone, playertwo, vocabulary, quiz, resume, yess, no, quit, hello, tree, light, now, maybe, today, easy, medium, hard, moin, nextlevel, Error, Quiz, food, head, hair, leg, sun, always, water, table, city, stairs, haircolour, wheel, bellybutton, broken, contract, community, candle, field, gale, giveup, microwave, pillow, policy, balance, acquaintance, bossy, confident, generous, 
+	public static enum UserIntent {Answer, hey, hand, vocab, levelone, leveltwo, difficulty, bone, onne, twwo, again, banana, menu, bye, playerone, playertwo, vocabulary, quiz, resume, yess, no, quit, hello, tree, light, now, maybe, today, easy, medium, hard, moin, nextlevel, Error, Quiz, food, head, hair, leg, sun, always, water, table, city, stairs, haircolour, wheel, bellybutton, broken, contract, community, candle, field, gale, giveup, microwave, pillow, policy, balance, acquaintance, bossy, confident, generous, 
 		mother, inlaw, moody, reliable, accountancy, apply, fluently, insist, representative, 
 		smoothly, bewillingto, middleclass, motherinlaw};
 	UserIntent ourUserIntent;
@@ -189,13 +186,9 @@ implements SpeechletV2
 		
 	}
 	
-	//private String de = "";
-	//private String en = "";
-	//public String a = "";
-	//public String b = "";
-	private void selectQuestion0() {
-		//String b = "";
-		//String a = "";
+	
+	private void selectQuestion() {
+		
 		
 		Connection con = AlexaSkillSpeechlet.connect(); 
 		  PreparedStatement ps = null; 
@@ -222,6 +215,7 @@ implements SpeechletV2
 		  } catch(SQLException e) {
 		    //System.out.println(e.toString());
 		  } 
+		  
 		  //return (rs.getString("de"));
 		  //return (rs.getString("de"));
 		  //finally {
@@ -241,7 +235,7 @@ implements SpeechletV2
   
 		}
 	
-	private void selectQuestion() {
+	/*private void selectQuestion() {
 		String a = "";
 		String b = "";
 		selectQuestion();
@@ -251,9 +245,9 @@ implements SpeechletV2
 			switch(questions){
 			case 1: question = a; correctAnswer = "hello"; break;
 			}
-		}
+		}*/
 	
-	private void selectQuestion00() {
+	private void selectQuestion0() {
 	Random r = new Random();
 	int questions = r.nextInt(15);
 		switch(questions){
@@ -280,7 +274,7 @@ implements SpeechletV2
 		//int questions1 = r.nextInt(16);
 		int questions1 = 1;
 		switch(questions1){
-		case 1: question1 = "Hallo bedeutet auf englisch hello. Sage hallo auf englisch."; correctAnswer1 = "hello"; break;
+		case 1: question1 = "Hallo bedeutet auf englisch hello. Sage hallo auf englisch."; correctAnswer1 = "butterbrot"; break;
 		/*case 2: question1 = "baum bedeutet auf englisch tree. Sage baum auf englisch."; correctAnswer1 = "tree"; break;
 		case 3: question1 = "jetzt bedeutet auf englisch now. Sage jetzt auf englisch."; correctAnswer1 = "now"; break;
 		case 4: question1 = "vielleicht bedeutet auf englisch maybe. Sage vielleicht auf englisch."; correctAnswer1 = "maybe"; break;
@@ -294,8 +288,8 @@ implements SpeechletV2
 		case 12: question1 = "Immer bedeutet auf englisch always. Sage immer auf englisch"; correctAnswer1 = "always"; break;
 		case 13: question1 = "Wasser bedeutet auf englisch water. Sage Wasser auf englisch"; correctAnswer1 = "water"; break;
 		case 14: question1 = "Tisch bedeutet auf englisch table. Sage Tisch auf englisch."; correctAnswer1 = "table"; break;
-		case 15: question1 = "Stadt bedeutet auf englisch city. Sage Stadt auf englisch."; correctAnswer1 = "city"; break;
-		case 16: question1 = "Stadt bedeutet auf englisch city. Sage Stadt auf englisch."; correctAnswer1 = "butterbrot"; break;*/
+		case 15: question1 = "Stadt bedeutet auf englisch city. Sage Stadt auf englisch."; correctAnswer1 = "city"; break;*/
+		
 		}
 	}
 	
@@ -323,7 +317,7 @@ implements SpeechletV2
 	
 	private void selectQuestion2() {
 		Random r = new Random();
-		int questions2 = r.nextInt(8);
+		int questions2 = r.nextInt(18);
 		switch(questions2){
 		case 1: question2 = "Was bedeutet hallo auf englisch?"; correctAnswer2 = "hello"; break;
 		case 2: question2 = "Was bedeutet Baum auf englisch?"; correctAnswer2 = "tree"; break;
@@ -338,7 +332,7 @@ implements SpeechletV2
 	}
 	private void selectQuestion3() {
 		Random r = new Random();
-		int questions3 = r.nextInt(9);
+		int questions3 = r.nextInt(19);
 		switch(questions3){
 		case 1: question3 = "Was bedeutet Rad auf englisch?"; correctAnswer3 = "wheel"; break;
 		case 2: question3 = "Was bedeutet Bauchnabel auf englisch?"; correctAnswer3 = "bellybutton"; break;
@@ -354,7 +348,7 @@ implements SpeechletV2
 	}
 	private void selectQuestion4() {
 		Random r = new Random();
-		int questions4 = r.nextInt(10);
+		int questions4 = r.nextInt(20);
 		switch(questions4){
 		case 1: question4 = "Was bedeutet rechthaberisch auf englisch?"; correctAnswer4 = "bossy"; break;
 		case 2: question4 = "Was bedeutet Vertreter auf englisch?"; correctAnswer4 = "representative"; break;
@@ -938,11 +932,27 @@ implements SpeechletV2
 	}
 	
 	/*in den Vokabeln*/
-	private SpeechletResponse evaluateAnswerVokabelnMedium(String userRequest) {
+	/*private SpeechletResponse evaluateAnswerVokabelnMedium(String userRequest) {
 		SpeechletResponse res = null;
 		recognizeUserIntent(userRequest);{
 				logger.info("User answer ="+ ourUserIntent.name().toLowerCase()+ "/correct answer="+correctAnswer1);
 				if (ourUserIntent.name().toLowerCase().equals(correctAnswer1)) {
+					logger.info("User answer recognized as correct.");
+						recState = RecognitionState.YesNoVokabelnMedium;
+						res = askUserResponse(correctMsg+" "+continueMsg);
+				} else {
+					recState = RecognitionState.YesNoVokabelnMedium;
+					res = askUserResponse(wrongVocMsg+" "+correctAnswer1+". "+continueMsg);
+				}
+			} 
+		return res;
+	}*/
+	
+	private SpeechletResponse evaluateAnswerVokabelnMedium(String userRequest) {
+		SpeechletResponse res = null;
+		recognizeUserIntent(userRequest);{
+				logger.info("User answer ="+ userRequest.toLowerCase()+ "/correct answer="+correctAnswer1);
+				if (userRequest.toLowerCase().equals(correctAnswer1)) {
 					logger.info("User answer recognized as correct.");
 						recState = RecognitionState.YesNoVokabelnMedium;
 						res = askUserResponse(correctMsg+" "+continueMsg);
@@ -1380,15 +1390,15 @@ implements SpeechletV2
 		String pattern8 = "(.*)?(\\bleave\\b)(.*)?";
 		String pattern9 = "(.*)?(\\bmaybe\\b)(.*)?";
 		String pattern10 = "(.*)?(\\btoday\\b)(.*)?";
-		String pattern11 = "(.*)?(\\bonne\\b)(.*)?";
-		String pattern12 = "(.*)?(\\btwwo\\b)(.*)?";
+		String pattern11 = "(.*)?(\\b(one)|(1)\\b)(.*)?";
+		String pattern12 = "(.*)?(\\b(two)|(2)\\b)(.*)?";
 		String pattern13 = "(.*)?(\\bvocabulary\\b)(.*)?";
 		String pattern14 = "(.*)?(\\bquiz\\b)(.*)?";
 		String pattern15 = "(.*)?(\\beasy\\b)(.*)?";
 		String pattern16 = "(.*)?(\\bmedium\\b)(.*)?";
 		String pattern17 = "(.*)?(\\bhard\\b)(.*)?";
-		String pattern18 = "(.*)?(bonne\\b)(.*)?";
-		String pattern19 = "(.*)?(\\btwwo\\b)(.*)?";
+		String pattern18 = "(.*)?(\\bone\\b)(.*)?";
+		String pattern19 = "(.*)?(\\btwo\\b)(.*)?";
 		String pattern20 = "(.*)?(\\bbye\\b)(.*)?";
 		String pattern21 = "(.*)?(\\bmenu\\b)(.*)?";
 		String pattern22 = "\\bmoin\\b";
@@ -1398,7 +1408,7 @@ implements SpeechletV2
 		String pattern26 = "(.*)?(\\blight\\b)(.*)?";
 		/*String pattern27 = "\\bbone\\b";
 		String pattern28 = "\\btwo\\b";*/
-		String pattern29 = "(.*)?(\\byess\\b)(.*)?";
+		String pattern29 = "(.*)?(\\byes\\b)(.*)?";
 		String pattern30 = "(.*)?(\\bno\\b)(.*)?";
 		String pattern31 = "(.*)?(\\bquiz\\b)(.*)?";
 		String pattern32 = "(.*)?(\\bquit\\b)(.*)?";
@@ -1448,7 +1458,8 @@ implements SpeechletV2
 		String pattern77 = "(.*)?(\\bhey\\b)(.*)?";
 		
 		String pattern100 = "(.*)?(\\blevel\\sone\\b)(.*)?";
-		String pattern101 = "(.*)?(\\blevel\\two\\b)(.*)?";
+		String pattern101 = "(.*)?(\\blevel\\stwo\\b)(.*)?";
+		String pattern102 = "(.*)?";
 		
 		
 		
@@ -1605,6 +1616,9 @@ implements SpeechletV2
 		Matcher m100 = p100.matcher(userRequest);
 		Pattern p101 = Pattern.compile(pattern101);
 		Matcher m101 = p101.matcher(userRequest);
+		Pattern p102 = Pattern.compile(pattern102);
+		Matcher m102 = p102.matcher(userRequest);
+		
 		
 		if (m4.find()) {
 			ourUserIntent = UserIntent.now;
@@ -1758,6 +1772,8 @@ implements SpeechletV2
 			ourUserIntent = UserIntent.levelone;
 		} else if (m101.find()) {
 			ourUserIntent = UserIntent.leveltwo;
+		//} else if (m102.find()) {
+		//	ourUserIntent = UserIntent.Answer;
 		} else {
 			ourUserIntent = UserIntent.Error;
 		}
