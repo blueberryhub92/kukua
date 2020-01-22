@@ -64,7 +64,7 @@ implements SpeechletV2
 	    try {
 	      Class.forName("org.sqlite.JDBC");
 	      con = DriverManager.getConnection("jdbc:sqlite:Vokabeln.db"); // connecting to our database
-	      //System.out.println("Connected!");
+	      logger.info("Connected!");
 	    } catch (ClassNotFoundException | SQLException e ) {
 	      // TODO Auto-generated catch block
 	      //System.out.println(e+"");
@@ -187,65 +187,48 @@ implements SpeechletV2
 	}
 	
 	
-	private void selectQuestion() {
+	
+	private String selectQuestion() {
 		
 		
 		Connection con = AlexaSkillSpeechlet.connect(); 
 		  PreparedStatement ps = null; 
 		  ResultSet rs = null; 
-		  
+		  //String[] meinArray = new String[2];
+		  //question = null;
+		  //correctAnswer = null;
+		  //String a = "";
 		  try {
+			 logger.info("Try-Block");
 		    String sql = "SELECT * FROM Vokabelliste ORDER BY RANDOM() LIMIT 1";
 		    ps = con.prepareStatement(sql); 
 		    rs = ps.executeQuery();
 		    /*System.out.println("ALL VOCABULARY\n");*/
-		    //while(rs.next()) {
+		    while(rs.next()) {
 		      /*int number = rs.getInt("number");*/
-		      String de = rs.getString("de"); 
-		      String en = rs.getString("en"); 
-		      String Thema = rs.getString("Thema"); 
+		     String de = rs.getString("de"); 
+		      //meinArray[1] = rs.getString("en"); 
 		      
-		     //question = de; correctAnswer = en;
-		      	int questions = 1;
-		      		switch(questions){
-		      		case 1: question = de; correctAnswer = en; break;
-		      		}
-		     
-		    //}
+		      return de;
+		      //String Thema = rs.getString("Thema"); 
+		       
+		 
+		      
+		      		
+		    }
+		    
 		  } catch(SQLException e) {
 		    //System.out.println(e.toString());
 		  } 
+		 // return question+correctAnswer;
+		return null;
 		  
-		  //return (rs.getString("de"));
-		  //return (rs.getString("de"));
-		  //finally {
-		    /*try {
-		      rs.close();
-		      ps.close();
-		      con.close(); 
-		    } catch(SQLException e) {
-		      //System.out.println(e.toString());
-		    }
-		    
-				}*/
-		  
-		  //}
-		// return (rs.getString("de"));
-		  
-  
-		}
-	
-	/*private void selectQuestion() {
-		String a = "";
-		String b = "";
-		selectQuestion();
-		int questions = 1;
-		//Random r = new Random();
-		//int questions = r.nextInt(1);
-			switch(questions){
-			case 1: question = a; correctAnswer = "hello"; break;
 			}
-		}*/
+		
+
+	
+		
+	
 	
 	private void selectQuestion0() {
 	Random r = new Random();
@@ -409,11 +392,12 @@ implements SpeechletV2
 	/* Im Vokabelteil: Möchten Sie resumemachen? -> stattdessen Quizzen? */
 	private SpeechletResponse evaluateYesNoVokabelnEasy(String userRequest) {	
 		SpeechletResponse res = null;
+		
 		recognizeUserIntent(userRequest);
 		switch (ourUserIntent) {
 		case resume: {
-			selectQuestion();
-			res = askUserResponse(question);
+			String quest = selectQuestion();
+			res = askUserResponse(quest);
 			recState = RecognitionState.AnswerVokabelnEasy; break;
 		} case yess: {
 			selectQuestion();
@@ -788,8 +772,8 @@ implements SpeechletV2
 		recognizeUserIntent(userRequest);
 		switch (ourUserIntent) {
 		case easy: {
-			selectQuestion();
-			res = askUserResponse(question);
+			String quest = selectQuestion();
+			res = askUserResponse(quest);
 			recState = RecognitionState.AnswerVokabelnEasy; break;
 		} case medium: {
 			selectQuestion1();
