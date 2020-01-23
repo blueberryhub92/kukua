@@ -86,22 +86,12 @@ implements SpeechletV2
 	private static int sum7;
 	private static String question = "";
 	private static String antonym = "";
-	private static String question1 = "";
-	private static String question11 = "";
-	private static String question2 = "";
-	private static String question3 = "";
-	private static String question4 = "";
+	//private String Answer = "(I)?(don´t)?(know)?(what)?(is)?(the)?(correct)?(right)?(answer)?(is)?";
 	private static String correctAnswer = "";
-	private static String correctAnswer1 = "";
-	private static String correctAnswer11 = "";
 	private static String correctAnswer2 = "";
-	private static String correctAnswer3 = "";
-	private static String correctAnswer4 = "";
 	public static enum RecognitionState {YesNoQuizLevelEnd, YesNoQuizLevelOne, YesNoQuizLevelTwo, YesNoQuizLevelThree, YesNoVokabelnEasy, YesNoVokabelnMedium, YesNoVokabelnHard, AnswerQuizLevelOne, AnswerQuizLevelTwo, AnswerQuizLevelThree, AnswerVokabelnEasy, AnswerVokabelnMedium, AnswerVokabelnHard, Answer, AnswerTwo, AnswerThree, AnswerFour, AnswerFive, AnswerSix, AnswerSeven, YesNo, YesNoTwo, YesNoLevel, YesNoLevelTwo, OneTwo, VokabelQuiz, Vokabel, WhichPlayer, WhichPlayerThree, WhichPlayerFour, AgainOrMenu, resumequizzen, SingleQuiz, YesNoQuiz, YesNoVokabeln, AnswerVokabeln, AnswerQuiz};
 	private RecognitionState recState;
-	public static enum UserIntent {Answer, hey, hand, vocab, levelone, leveltwo, difficulty, bone, onne, twwo, again, banana, menu, bye, playerone, playertwo, vocabulary, quiz, resume, yess, no, quit, hello, tree, light, now, maybe, today, easy, medium, hard, moin, nextlevel, Error, Quiz, food, head, hair, leg, sun, always, water, table, city, stairs, haircolour, wheel, bellybutton, broken, contract, community, candle, field, gale, giveup, microwave, pillow, policy, balance, acquaintance, bossy, confident, generous, 
-		mother, inlaw, moody, reliable, accountancy, apply, fluently, insist, representative, 
-		smoothly, bewillingto, middleclass, motherinlaw};
+	public static enum UserIntent {Answer, again, vocab, levelone, leveltwo, difficulty, onne, twwo, menu, playerone, playertwo, vocabulary, quiz, resume, yess, no, quit, easy, medium, hard, nextlevel, Error, Quiz};
 	UserIntent ourUserIntent;
 
 	static String welcomeMsg = "Hello and welcome at Quizzitch. How many players want to play, one or two players?";
@@ -114,6 +104,7 @@ implements SpeechletV2
 	static String wrongVocMsg = "That's wrong. The correct answer would be";
 	static String dontknowMsg = "What a pity. The correct answer would be";
 	static String correctMsg = "That´s correct.";
+	static String correctAnswerMsg = "The correct answer would be ";
 	static String continueMsg = "Do you want to resume playing?";
 	static String congratsMsg = "Congratulations! You've won one {replacement} points.";
 	static String goodbyeMsg = "I hope to hear from you soon, good bye!";
@@ -770,6 +761,10 @@ implements SpeechletV2
 					logger.info("User answer recognized as correct.");
 						recState = RecognitionState.YesNoVokabelnEasy;
 						res = responseWithFlavour(correctMsg+" "+continueMsg,8);
+				/*}else if (userRequest.toLowerCase().equals(Answer.toLowerCase())) {
+						 logger.info("User doesn´t know the answer.");
+							 recState = RecognitionState.YesNoVokabelnEasy;
+							 res = responseWithFlavour(correctAnswerMsg+" "+correctAnswer+" "+continueMsg,8);*/
 				} else {
 					recState = RecognitionState.YesNoVokabelnEasy;
 					res = responseWithFlavour(wrongVocMsg+" "+correctAnswer+". "+continueMsg,7);
@@ -1186,31 +1181,51 @@ implements SpeechletV2
 	
 	void recognizeUserIntent(String userRequest) {
 		userRequest = userRequest.toLowerCase();
-		String pattern7 = "(.*)?(\\bresume\\b)(.*)?";
-		String pattern11 = "(.*)?(\\b(one)|(1)\\b)(.*)?";
-		String pattern12 = "(.*)?(\\b(two)|(2)\\b)(.*)?";
-		String pattern13 = "(.*)?(\\b(vocabulary)|(vocab)\\b)(.*)?";
-		String pattern14 = "(.*)?(\\bquiz\\b)(.*)?";
-		String pattern15 = "(.*)?(\\beasy\\b)(.*)?";
-		String pattern16 = "(.*)?(\\bmedium\\b)(.*)?";
-		String pattern17 = "(.*)?(\\bhard\\b)(.*)?";
-		String pattern18 = "(.*)?(\\bone\\b)(.*)?";
-		String pattern19 = "(.*)?(\\btwo\\b)(.*)?";
-		String pattern21 = "(.*)?(\\bmenu\\b)(.*)?";
-		String pattern23 = "(.*)?(next)?(\\blevel\\b)(.*)?";
-		String pattern29 = "(.*)?(\\byes\\b)(.*)?";
-		String pattern30 = "(.*)?(\\bno\\b)(.*)?";
-		String pattern31 = "(.*)?(\\bquiz\\b)(.*)?";
-		String pattern32 = "(.*)?(\\bquit\\b)(.*)?";
-		String pattern72 = "(.*)?(\\bdifficulty\\b)(.*)?";
-		String pattern73 = "(.*)?(\\bvocab\\b)(.*)?";
-		String pattern100 = "(.*)?(\\blevel\\sone\\b)(.*)?";
-		String pattern101 = "(.*)?(\\blevel\\stwo\\b)(.*)?";
+		String pattern1 = "(.*)?(\\bresume\\b)(.*)?";
+		String pattern2 = "(.*)?(\\b(one)|(1)\\b)(.*)?";
+		String pattern3 = "(.*)?(\\b(two)|(2)\\b)(.*)?";
+		String pattern4 = "(.*)?(\\b(vocabulary)|(vocab)\\b)(.*)?";
+		String pattern5 = "(.*)?(\\bquiz\\b)(.*)?";
+		String pattern6 = "(.*)?(\\beasy\\b)(.*)?";
+		String pattern7 = "(.*)?(\\bmedium\\b)(.*)?";
+		String pattern8 = "(.*)?(\\bhard\\b)(.*)?";
+		String pattern9 = "(.*)?(\\bone\\b)(.*)?";
+		String pattern10 = "(.*)?(\\btwo\\b)(.*)?";
+		String pattern11 = "(.*)?(\\bmenu\\b)(.*)?";
+		String pattern12 = "(.*)?(next)?(\\blevel\\b)(.*)?";
+		String pattern13 = "(.*)?(\\byes\\b)(.*)?";
+		String pattern14 = "(.*)?(\\bno\\b)(.*)?";
+		String pattern15 = "(.*)?(\\bquiz\\b)(.*)?";
+		String pattern16 = "(.*)?(\\bquit\\b)(.*)?";
+		String pattern17 = "(.*)?(\\bdifficulty\\b)(.*)?";
+		String pattern18 = "(.*)?(\\bvocab\\b)(.*)?";
+		String pattern19 = "(.*)?(\\blevel\\sone\\b)(.*)?";
+		String pattern20 = "(.*)?(\\blevel\\stwo\\b)(.*)?";
+		String pattern21 = "(I)?(don´t)?(know)?(what)?(is)?(the)?(correct)?(right)?(answer)?";
+		String pattern22 = "(.*)?(\\bagain\\b)(.*)?";
 		
 		
 		
+		Pattern p1 = Pattern.compile(pattern1);
+		Matcher m1 = p1.matcher(userRequest);
+		Pattern p2 = Pattern.compile(pattern2);
+		Matcher m2= p2.matcher(userRequest);
+		Pattern p3 = Pattern.compile(pattern3);
+		Matcher m3= p3.matcher(userRequest);
+		Pattern p4 = Pattern.compile(pattern4);
+		Matcher m4= p4.matcher(userRequest);
+		Pattern p5 = Pattern.compile(pattern5);
+		Matcher m5= p5.matcher(userRequest);
+		Pattern p6 = Pattern.compile(pattern6);
+		Matcher m6= p6.matcher(userRequest);
 		Pattern p7 = Pattern.compile(pattern7);
-		Matcher m7 = p7.matcher(userRequest);
+		Matcher m7= p7.matcher(userRequest);
+		Pattern p8 = Pattern.compile(pattern8);
+		Matcher m8= p8.matcher(userRequest);
+		Pattern p9 = Pattern.compile(pattern9);
+		Matcher m9= p9.matcher(userRequest);
+		Pattern p10 = Pattern.compile(pattern10);
+		Matcher m10= p10.matcher(userRequest);
 		Pattern p11 = Pattern.compile(pattern11);
 		Matcher m11= p11.matcher(userRequest);
 		Pattern p12 = Pattern.compile(pattern12);
@@ -1224,73 +1239,63 @@ implements SpeechletV2
 		Pattern p16 = Pattern.compile(pattern16);
 		Matcher m16= p16.matcher(userRequest);
 		Pattern p17 = Pattern.compile(pattern17);
-		Matcher m17= p17.matcher(userRequest);
+		Matcher m17 = p17.matcher(userRequest);
 		Pattern p18 = Pattern.compile(pattern18);
-		Matcher m18= p18.matcher(userRequest);
+		Matcher m18 = p18.matcher(userRequest);
 		Pattern p19 = Pattern.compile(pattern19);
-		Matcher m19= p19.matcher(userRequest);
+		Matcher m19 = p19.matcher(userRequest);
+		Pattern p20 = Pattern.compile(pattern20);
+		Matcher m20 = p20.matcher(userRequest);
 		Pattern p21 = Pattern.compile(pattern21);
-		Matcher m21= p21.matcher(userRequest);
-		Pattern p23 = Pattern.compile(pattern23);
-		Matcher m23= p23.matcher(userRequest);
-		Pattern p29 = Pattern.compile(pattern29);
-		Matcher m29= p29.matcher(userRequest);
-		Pattern p30 = Pattern.compile(pattern30);
-		Matcher m30= p30.matcher(userRequest);
-		Pattern p31 = Pattern.compile(pattern31);
-		Matcher m31= p31.matcher(userRequest);
-		Pattern p32 = Pattern.compile(pattern32);
-		Matcher m32= p32.matcher(userRequest);
-		Pattern p72 = Pattern.compile(pattern72);
-		Matcher m72 = p72.matcher(userRequest);
-		Pattern p73 = Pattern.compile(pattern73);
-		Matcher m73 = p73.matcher(userRequest);
-		Pattern p100 = Pattern.compile(pattern100);
-		Matcher m100 = p100.matcher(userRequest);
-		Pattern p101 = Pattern.compile(pattern101);
-		Matcher m101 = p101.matcher(userRequest);
+		Matcher m21 = p21.matcher(userRequest);
+		Pattern p22 = Pattern.compile(pattern22);
+		Matcher m22 = p22.matcher(userRequest);
 		
 		
-		if (m7.find()) {
+		if (m1.find()) {
 			ourUserIntent = UserIntent.resume;
-		} else if (m11.find()) {
+		} else if (m2.find()) {
 			ourUserIntent = UserIntent.onne;
-		} else if (m12.find()) {
+		} else if (m3.find()) {
 			ourUserIntent = UserIntent.twwo;
-		} else if (m13.find()) {
+		} else if (m4.find()) {
 			ourUserIntent = UserIntent.vocabulary;
-		} else if (m14.find()) {
+		} else if (m5.find()) {
 			ourUserIntent = UserIntent.quiz;
-		} else if (m15.find()) {
+		} else if (m6.find()) {
 			ourUserIntent = UserIntent.easy;
-		} else if (m16.find()) {
+		} else if (m7.find()) {
 			ourUserIntent = UserIntent.medium;
-		} else if (m17.find()) {
+		} else if (m8.find()) {
 			ourUserIntent = UserIntent.hard;
-		} else if (m18.find()) {
+		} else if (m9.find()) {
 			ourUserIntent = UserIntent.playerone;
-		} else if (m19.find()) {
+		} else if (m10.find()) {
 			ourUserIntent = UserIntent.playertwo;
-		} else if (m21.find()) {
+		} else if (m11.find()) {
 			ourUserIntent = UserIntent.menu;
-		} else if (m23.find()) {
+		} else if (m12.find()) {
 			ourUserIntent = UserIntent.nextlevel;
-		} else if (m29.find()) {
+		} else if (m13.find()) {
 			ourUserIntent = UserIntent.yess;
-		} else if (m30.find()) {
+		} else if (m14.find()) {
 			ourUserIntent = UserIntent.no;
-		} else if (m31.find()) {
+		} else if (m15.find()) {
 			ourUserIntent = UserIntent.quiz;
-		} else if (m32.find()) {
+		} else if (m16.find()) {
 			ourUserIntent = UserIntent.quit;
-		} else if (m72.find()) {
+		} else if (m17.find()) {
 			ourUserIntent = UserIntent.difficulty;
-		} else if (m73.find()) {
+		} else if (m18.find()) {
 			ourUserIntent = UserIntent.vocab;
-		} else if (m100.find()) {
+		} else if (m19.find()) {
 			ourUserIntent = UserIntent.levelone;
-		} else if (m101.find()) {
+		} else if (m20.find()) {
 			ourUserIntent = UserIntent.leveltwo;
+		} else if (m21.find()) {
+			ourUserIntent = UserIntent.Answer;
+		} else if (m22.find()) {
+			ourUserIntent = UserIntent.again;
 		} else {
 			ourUserIntent = UserIntent.Error;
 		}
