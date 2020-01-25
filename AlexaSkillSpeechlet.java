@@ -66,10 +66,8 @@ implements SpeechletV2
 	      con = DriverManager.getConnection("jdbc:sqlite:/Users/raphaelstedler/Desktop/Praxisprojekt-master/de.unidue.ltl.ourWWM/Vokabeln.db"); // connecting to our database
 	      logger.info("Connected!");
 	    } catch (ClassNotFoundException | SQLException e ) {
-	      // TODO Auto-generated catch block
-	      //System.out.println(e+"");
+	      logger.info(e+"");
 	    }
-	    
 	    return con; 
 	  }
 	
@@ -86,18 +84,18 @@ implements SpeechletV2
 	private static int sum7;
 	private static String question = "";
 	private static String antonym = "";
-	//private String Answer = "(I)?(don´t)?(know)?(what)?(is)?(the)?(correct)?(right)?(answer)?(is)?";
+	private static String Answer = "";
 	private static String correctAnswer = "";
 	private static String correctAnswer2 = "";
-	public static enum RecognitionState {YesNoQuizLevelEnd, YesNoQuizLevelOne, YesNoQuizLevelTwo, YesNoQuizLevelThree, YesNoVokabelnEasy, YesNoVokabelnMedium, YesNoVokabelnHard, AnswerQuizLevelOne, AnswerQuizLevelTwo, AnswerQuizLevelThree, AnswerVokabelnEasy, AnswerVokabelnMedium, AnswerVokabelnHard, Answer, AnswerTwo, AnswerThree, AnswerFour, AnswerFive, AnswerSix, AnswerSeven, YesNo, YesNoTwo, YesNoLevel, YesNoLevelTwo, OneTwo, VokabelQuiz, Vokabel, WhichPlayer, WhichPlayerThree, WhichPlayerFour, AgainOrMenu, resumequizzen, SingleQuiz, YesNoQuiz, YesNoVokabeln, AnswerVokabeln, AnswerQuiz};
+	public static enum RecognitionState {YesNoQuizLevelEnd, YesNoQuizLevelOne, YesNoQuizLevelTwo, YesNoQuizLevelThree, YesNoVokabelnEasy, YesNoVokabelnBasics, YesNoVokabelnHard, AnswerQuizLevelOne, AnswerQuizLevelTwo, AnswerQuizLevelThree, AnswerVokabelnEasy, AnswerVokabelnMedium, AnswerVokabelnHard, Answer, AnswerTwo, AnswerThree, AnswerFour, AnswerFive, AnswerSix, AnswerSeven, YesNo, YesNoTwo, YesNoLevel, YesNoLevelTwo, OneTwo, VokabelQuiz, Vokabel, WhichPlayer, WhichPlayerThree, WhichPlayerFour, AgainOrMenu, resumequizzen, SingleQuiz, YesNoQuiz, YesNoVokabeln, AnswerVokabeln, AnswerQuiz};
 	private RecognitionState recState;
-	public static enum UserIntent {Answer, again, vocab, levelone, leveltwo, difficulty, onne, twwo, menu, playerone, playertwo, vocabulary, quiz, resume, yess, no, quit, easy, medium, hard, nextlevel, Error, Quiz};
+	public static enum UserIntent {Answer, again, vocab, levelone, leveltwo, difficulty, onne, twwo, menu, playerone, playertwo, vocabulary, quiz, resume, yess, no, quit, easy, basics, expressions, nextlevel, Error, Quiz};
 	UserIntent ourUserIntent;
 
 	static String welcomeMsg = "Hello and welcome at Quizzitch. How many players want to play, one or two players?";
 	static String singleMsg = "You're in single mode. Do you want to train vocabulary first or starting a quiz?";
 	static String multiMsg = "You're in two player mode. Please clarify who wants to be player one and who wants to be player two. If you think you know the correct answer, say you're player number. You will get points if your answer is correct. Let's begin!";	
-	static String difficultyMsg = "Please choose between the difficulty levels easy, medium and hard.";
+	static String ThemeMsg = "You can choose between different themes. Tell me the area you want to learn vocabulary in or choose all vocabulary.";
 	static String singleQuizMsg = "Welcome to the single quiz mode. Let's begin!";
 	static String antonymMsg = "What's the antonym of ";
 	static String wrongMsg = "That's wrong. The correct answer would be";
@@ -116,7 +114,7 @@ implements SpeechletV2
 	static String errorAnswerMsg = "Sorry I did not unterstand that. Please mention your answer again.";
 	static String errorOneTwoMsg = "Unfortunately I did not unterstand that. Please say one or two.";
 	static String errorVokabelQuizMsg = "Unfortunately I did not understand that. Say vocabulary or quiz.";
-	static String errorVokabelMsg = "What difficulty level do you want to train your vocabulary in? You can choose between easy, medium and hard.";
+	static String errorVokabelMsg = "Do you want to train your vocabulary in a certain area? If so, choose one or continue with all areas.";
 	static String VokabelLeicht = "Welcome to the easy vocab trainer";
 	static String VokabelMittel = "Welcome to the medium vocab trainer";
 	static String VokabelSchwer = "Welcome to the hard vocab trainer";
@@ -140,7 +138,6 @@ implements SpeechletV2
 	static String resumeVokabelnMsg = "Do you want to the some vocabulary instead or quit the app?";
 	
 
-
 	private String buildString(String msg, String replacement1, String replacement2) {
 		return msg.replace("{replacement}", replacement1).replace("{replacement2}", replacement2);
 	}
@@ -152,10 +149,6 @@ implements SpeechletV2
 	private String buildString3(String msg, String replacement5, String replacement6) {
 		return msg.replace("{replacement5}", replacement5).replace("{replacement6}", replacement6);
 	}
-
-	
-	
-		
 
 
 	@Override
@@ -184,14 +177,17 @@ implements SpeechletV2
 	
 	private String selectQuestion() {
 		
+		Answer = "correct answer";
 		
 		Connection con = AlexaSkillSpeechlet.connect(); 
 		  PreparedStatement ps = null; 
 		  ResultSet rs = null; 
 		  
+		  
 		  try {
 			 logger.info("Try-Block");
 			 
+			//String sql = "SELECT * FROM Vokabelliste WHERE Thema LIKE 'Grundlagen' ORDER BY RANDOM() LIMIT 1";
 		    String sql = "SELECT * FROM Vokabelliste ORDER BY RANDOM() LIMIT 1";
 		    ps = con.prepareStatement(sql); 
 		    rs = ps.executeQuery();
@@ -199,9 +195,42 @@ implements SpeechletV2
 		    while(rs.next()) {
 		      /*int number = rs.getInt("number");*/
 		     question = rs.getString("de"); 
-		     correctAnswer = rs.getString("en"); 
+		     correctAnswer = rs.getString("en");
+		     String Thema = rs.getString("Thema");
 		     return question+correctAnswer;
-		      //String Thema = rs.getString("Thema");  
+		       
+		    }
+		      	  }
+		  	   catch(SQLException e) {
+		    //System.out.println(e.toString());
+		  } 
+		  return null;
+		  }
+	
+private String selectQuestion2() {
+		
+		Answer = "correct answer";
+		
+		Connection con = AlexaSkillSpeechlet.connect(); 
+		  PreparedStatement ps = null; 
+		  ResultSet rs = null; 
+		  
+		  
+		  try {
+			 logger.info("Try-Block");
+			 
+			String sql = "SELECT * FROM Vokabelliste WHERE Thema LIKE 'Grundlagen' ORDER BY RANDOM() LIMIT 1";
+		    //String sql = "SELECT * FROM Vokabelliste ORDER BY RANDOM() LIMIT 1";
+		    ps = con.prepareStatement(sql); 
+		    rs = ps.executeQuery();
+		    
+		    while(rs.next()) {
+		     //int number = rs.getInt("number");
+		     question = rs.getString("de"); 
+		     correctAnswer = rs.getString("en");
+		     String Thema = rs.getString("Thema");
+		     return question+correctAnswer;
+		       
 		    }
 		      	  }
 		  	   catch(SQLException e) {
@@ -210,6 +239,38 @@ implements SpeechletV2
 		  return null;
 		  }
 		
+private String selectQuestion3() {
+	
+	Answer = "correct answer";
+	
+	Connection con = AlexaSkillSpeechlet.connect(); 
+	  PreparedStatement ps = null; 
+	  ResultSet rs = null; 
+	  
+	  
+	  try {
+		 logger.info("Try-Block");
+		 
+		String sql = "SELECT * FROM Vokabelliste WHERE Thema LIKE 'Ausdrücke' ORDER BY RANDOM() LIMIT 1";
+	    //String sql = "SELECT * FROM Vokabelliste ORDER BY RANDOM() LIMIT 1";
+	    ps = con.prepareStatement(sql); 
+	    rs = ps.executeQuery();
+	    
+	    while(rs.next()) {
+	     //int number = rs.getInt("number");
+	     question = rs.getString("de"); 
+	     correctAnswer = rs.getString("en");
+	     String Thema = rs.getString("Thema");
+	     return question+correctAnswer;
+	       
+	    }
+	      	  }
+	  	   catch(SQLException e) {
+	    //System.out.println(e.toString());
+	  } 
+	  return null;
+	  }
+	
 	private String selectAntonym() {
 		
 		Connection con = AlexaSkillSpeechlet.connect(); 
@@ -268,7 +329,7 @@ implements SpeechletV2
 		case YesNoQuizLevelThree: resp = evaluateYesNoQuizLevelThree(userRequest); break;
 		case YesNoQuizLevelEnd: resp = evaluateYesNoQuizLevelEnd(userRequest); break;
 		case YesNoVokabelnEasy: resp = evaluateYesNoVokabelnEasy(userRequest); break;
-		//case YesNoVokabelnMedium: resp = evaluateYesNoVokabelnMedium(userRequest); break;
+		case YesNoVokabelnBasics: resp = evaluateYesNoVokabelnBasics(userRequest); break;
 		//case YesNoVokabelnHard: resp = evaluateYesNoVokabelnHard(userRequest); break;
 		case AnswerVokabelnEasy: resp = evaluateAnswerVokabelnEasy(userRequest); break;
 		//case AnswerVokabelnMedium: resp = evaluateAnswerVokabelnMedium(userRequest); break;
@@ -305,7 +366,39 @@ implements SpeechletV2
 			res = responseWithFlavour(welcomeMsg, 5);
 			recState = RecognitionState.OneTwo; break;
 		} case difficulty: {
-			res = askUserResponse(difficultyMsg);
+			res = askUserResponse(ThemeMsg);
+			recState = RecognitionState.Vokabel; break;
+		} default: {
+			res = askUserResponse(errorYesNoMsg);
+		}
+		}
+		return res;
+	}
+	
+	private SpeechletResponse evaluateYesNoVokabelnBasics(String userRequest) {	
+		SpeechletResponse res = null;
+		
+		recognizeUserIntent(userRequest);
+		switch (ourUserIntent) {
+		case resume: {
+			selectQuestion2();
+			res = responseWithFlavour(question, 6);
+			recState = RecognitionState.AnswerVokabelnEasy; break;
+		} case yess: {
+			selectQuestion2();
+			res = responseWithFlavour(question, 6);
+			recState = RecognitionState.AnswerVokabelnEasy; break;
+			
+		} case quit: {
+			res = responseWithFlavour2(goodbyeMsg, 0); break;
+		} case no: {
+			res = responseWithFlavour2(goodbyeMsg, 0); break;
+			
+		} case menu: {
+			res = responseWithFlavour(welcomeMsg, 5);
+			recState = RecognitionState.OneTwo; break;
+		} case difficulty: {
+			res = askUserResponse(ThemeMsg);
 			recState = RecognitionState.Vokabel; break;
 		} default: {
 			res = askUserResponse(errorYesNoMsg);
@@ -604,7 +697,7 @@ implements SpeechletV2
 		recognizeUserIntent(userRequest);
 		switch (ourUserIntent) {
 		case vocabulary: {
-			res = askUserResponse(difficultyMsg);
+			res = askUserResponse(ThemeMsg);
 			recState = RecognitionState.Vokabel; break;
 		} case quiz: {
 			selectAntonym();
@@ -629,11 +722,15 @@ implements SpeechletV2
 			selectQuestion();
 			res = responseWithFlavour(question, 6);
 			recState = RecognitionState.AnswerVokabelnEasy; break;
-		/*} case medium: {
-			selectQuestion1();
-			res = askUserResponse(question1);
-			recState = RecognitionState.AnswerVokabelnMedium; break;
-		} case hard: {
+		} case basics: {
+			selectQuestion2();
+			res = responseWithFlavour(question, 6);
+			recState = RecognitionState.AnswerVokabelnEasy; break;
+		} case expressions: {
+			selectQuestion3();
+			res = responseWithFlavour(question, 6);
+			recState = RecognitionState.AnswerVokabelnEasy; break;
+		/*} case hard: {
 			selectQuestion11();
 			res = askUserResponse(question11);
 			recState = RecognitionState.AnswerVokabelnHard; break;*/
@@ -761,10 +858,10 @@ implements SpeechletV2
 					logger.info("User answer recognized as correct.");
 						recState = RecognitionState.YesNoVokabelnEasy;
 						res = responseWithFlavour(correctMsg+" "+continueMsg,8);
-				/*}else if (userRequest.toLowerCase().equals(Answer.toLowerCase())) {
+				}else if (userRequest.toLowerCase().equals(Answer)) {
 						 logger.info("User doesn´t know the answer.");
 							 recState = RecognitionState.YesNoVokabelnEasy;
-							 res = responseWithFlavour(correctAnswerMsg+" "+correctAnswer+" "+continueMsg,8);*/
+							 res = askUserResponse(correctAnswerMsg+" "+correctAnswer+". "+continueMsg);
 				} else {
 					recState = RecognitionState.YesNoVokabelnEasy;
 					res = responseWithFlavour(wrongVocMsg+" "+correctAnswer+". "+continueMsg,7);
@@ -1187,8 +1284,8 @@ implements SpeechletV2
 		String pattern4 = "(.*)?(\\b(vocabulary)|(vocab)\\b)(.*)?";
 		String pattern5 = "(.*)?(\\bquiz\\b)(.*)?";
 		String pattern6 = "(.*)?(\\beasy\\b)(.*)?";
-		String pattern7 = "(.*)?(\\bmedium\\b)(.*)?";
-		String pattern8 = "(.*)?(\\bhard\\b)(.*)?";
+		String pattern7 = "(.*)?(\\bbasics\\b)(.*)?";
+		String pattern8 = "(.*)?(\\bexpressions\\b)(.*)?";
 		String pattern9 = "(.*)?(\\bone\\b)(.*)?";
 		String pattern10 = "(.*)?(\\btwo\\b)(.*)?";
 		String pattern11 = "(.*)?(\\bmenu\\b)(.*)?";
@@ -1201,7 +1298,7 @@ implements SpeechletV2
 		String pattern18 = "(.*)?(\\bvocab\\b)(.*)?";
 		String pattern19 = "(.*)?(\\blevel\\sone\\b)(.*)?";
 		String pattern20 = "(.*)?(\\blevel\\stwo\\b)(.*)?";
-		String pattern21 = "(I)?(don´t)?(know)?(what)?(is)?(the)?(correct)?(right)?(answer)?";
+		//String pattern21 = "(I)?(don´t)?(know)?(what)?(is)?(the)?(correct)?(right)?(answer)?";
 		String pattern22 = "(.*)?(\\bagain\\b)(.*)?";
 		
 		
@@ -1246,8 +1343,8 @@ implements SpeechletV2
 		Matcher m19 = p19.matcher(userRequest);
 		Pattern p20 = Pattern.compile(pattern20);
 		Matcher m20 = p20.matcher(userRequest);
-		Pattern p21 = Pattern.compile(pattern21);
-		Matcher m21 = p21.matcher(userRequest);
+		//Pattern p21 = Pattern.compile(pattern21);
+		//Matcher m21 = p21.matcher(userRequest);
 		Pattern p22 = Pattern.compile(pattern22);
 		Matcher m22 = p22.matcher(userRequest);
 		
@@ -1265,9 +1362,9 @@ implements SpeechletV2
 		} else if (m6.find()) {
 			ourUserIntent = UserIntent.easy;
 		} else if (m7.find()) {
-			ourUserIntent = UserIntent.medium;
+			ourUserIntent = UserIntent.basics;
 		} else if (m8.find()) {
-			ourUserIntent = UserIntent.hard;
+			ourUserIntent = UserIntent.expressions;
 		} else if (m9.find()) {
 			ourUserIntent = UserIntent.playerone;
 		} else if (m10.find()) {
@@ -1292,8 +1389,8 @@ implements SpeechletV2
 			ourUserIntent = UserIntent.levelone;
 		} else if (m20.find()) {
 			ourUserIntent = UserIntent.leveltwo;
-		} else if (m21.find()) {
-			ourUserIntent = UserIntent.Answer;
+		//} else if (m21.find()) {
+		//	ourUserIntent = UserIntent.Answer;
 		} else if (m22.find()) {
 			ourUserIntent = UserIntent.again;
 		} else {
