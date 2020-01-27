@@ -11,6 +11,7 @@ package com.amazon.customskill;
 
 import java.sql.Connection;
 
+
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -75,6 +76,7 @@ implements SpeechletV2
 
 	public static String userRequest;
 
+	public static int questions = 1;
 	private static int sum;
 	private static int sum2;
 	private static int sum3;
@@ -83,27 +85,28 @@ implements SpeechletV2
 	private static int sum6;
 	private static int sum7;
 	private static String question = "";
+	private static String question2 = "";
 	private static String antonym = "";
-	private static String Answer = "";
+	private static String Answer = "correct answer";
 	private static String correctAnswer = "";
 	private static String correctAnswer2 = "";
-	public static enum RecognitionState {YesNoQuizLevelEnd, YesNoQuizLevelOne, YesNoQuizLevelTwo, YesNoQuizLevelThree, YesNoVokabelnEasy, YesNoVokabelnBasics, YesNoVokabelnHard, AnswerQuizLevelOne, AnswerQuizLevelTwo, AnswerQuizLevelThree, AnswerVokabelnEasy, AnswerVokabelnMedium, AnswerVokabelnHard, Answer, AnswerTwo, AnswerThree, AnswerFour, AnswerFive, AnswerSix, AnswerSeven, YesNo, YesNoTwo, YesNoLevel, YesNoLevelTwo, OneTwo, VokabelQuiz, Vokabel, WhichPlayer, WhichPlayerThree, WhichPlayerFour, AgainOrMenu, resumequizzen, SingleQuiz, YesNoQuiz, YesNoVokabeln, AnswerVokabeln, AnswerQuiz};
+	public static enum RecognitionState {SingleThemes, MultiThemes,YesNoQuizLevelEnd, YesNoQuizLevelOne, YesNoQuizLevelTwo, YesNoQuizLevelThree, YesNoVokabelnEasy, YesNoVokabelnBasics, YesNoVokabelnHard, AnswerQuizLevelOne, AnswerQuizLevelTwo, AnswerQuizLevelThree, AnswerVokabelnEasy, AnswerVokabelnMedium, AnswerVokabelnHard, Answer, AnswerTwo, AnswerThree, AnswerFour, AnswerFive, AnswerSix, AnswerSeven, YesNo, YesNoTwo, YesNoLevel, YesNoLevelTwo, OneTwo, VokabelQuiz, Vokabel, WhichPlayer, WhichPlayerThree, WhichPlayerFour, AgainOrMenu, resumequizzen, SingleQuiz, YesNoQuiz, YesNoVokabeln, AnswerVokabeln, AnswerQuiz};
 	private RecognitionState recState;
-	public static enum UserIntent {Answer, again, vocab, levelone, leveltwo, difficulty, onne, twwo, menu, playerone, playertwo, vocabulary, quiz, resume, yess, no, quit, easy, basics, expressions, nextlevel, Error, Quiz};
+	public static enum UserIntent {antonyms, food, animals, answer, again, vocab, levelone, leveltwo, themes, onne, twwo, menu, playerone, playertwo, vocabulary, quiz, resume, yess, no, quit, any, basics, expressions, nextlevel, Error, Quiz};
 	UserIntent ourUserIntent;
 
 	static String welcomeMsg = "Hello and welcome at Quizzitch. How many players want to play, one or two players?";
 	static String singleMsg = "You're in single mode. Do you want to train vocabulary first or starting a quiz?";
-	static String multiMsg = "You're in two player mode. Please clarify who wants to be player one and who wants to be player two. If you think you know the correct answer, say you're player number. You will get points if your answer is correct. Let's begin!";	
-	static String ThemeMsg = "You can choose between different themes. Tell me the area you want to learn vocabulary in or choose all vocabulary.";
-	static String singleQuizMsg = "Welcome to the single quiz mode. Let's begin!";
+	static String multiMsg = "You're in two player mode. Please clarify who wants to be player one and who wants to be player two. If you think you know the correct answer, say you're player number. You will get points if your answer is correct. If nobody knows the answer, say correct answer. You can choose from the different themes or get questions from all areas.";	
+	static String ThemeMsg = "You can choose between different themes. Tell me the area you want to learn vocabulary in or choose all vocabulary. If you don´t know an answer, say correct answer.";
+	static String singleQuizMsg = "Welcome to the single quiz mode. In case you don´t know the answer, say correct answer and the answer wll be given without loosing points. Let's begin!";
 	static String antonymMsg = "What's the antonym of ";
 	static String wrongMsg = "That's wrong. The correct answer would be";
 	static String wrongVocMsg = "That's wrong. The correct answer would be";
 	static String dontknowMsg = "What a pity. The correct answer would be";
 	static String correctMsg = "That´s correct.";
 	static String correctAnswerMsg = "The correct answer would be ";
-	static String continueMsg = "Do you want to resume playing?";
+	static String continueMsg = "Continue?";
 	static String congratsMsg = "Congratulations! You've won one {replacement} points.";
 	static String goodbyeMsg = "I hope to hear from you soon, good bye!";
 	static String sumMsg = "You've {replacement} points. ";
@@ -115,16 +118,13 @@ implements SpeechletV2
 	static String errorOneTwoMsg = "Unfortunately I did not unterstand that. Please say one or two.";
 	static String errorVokabelQuizMsg = "Unfortunately I did not understand that. Say vocabulary or quiz.";
 	static String errorVokabelMsg = "Do you want to train your vocabulary in a certain area? If so, choose one or continue with all areas.";
-	static String VokabelLeicht = "Welcome to the easy vocab trainer";
-	static String VokabelMittel = "Welcome to the medium vocab trainer";
-	static String VokabelSchwer = "Welcome to the hard vocab trainer";
 	static String errorSpielereinszweiMsg = "Which player knows the correct answer?";
 	static String SpielerEinsMsg = "Player one was faster. What's your answer?";
 	static String SpielerEinsKurzMsg = "Player one?";
 	static String SpielerZweiMsg = "Player two was faster. What's your answer?";
 	static String SpielerZweiKurzMsg = "Player two?";
-	static String continueLevelMsg = "Level two is up. Do you want to contiunue?";
-	static String continueLevelTwoMsg = "Level three is up. Do you want to contiunue?";
+	static String continueLevelMsg = "Level two is up. Do you want to continue?";
+	static String continueLevelTwoMsg = "Level three is up. Do you want to continue?";
 	static String continueEinzelQuizLevelTwoMsg = "Congratulations! You've accomplished Level one. Do you want to jump to the second level?";
 	static String continueEinzelQuizLevelThreeMsg = "Congratulations! You've accomplished Level two. Do you want to jump to the third level?";
 	static String continueEinzelQuizEndMsg = "Congratulations! You made it all the way up! You've accomplished all levels! Do you want to resume the quiz, change level or go back to the menu?";
@@ -136,6 +136,7 @@ implements SpeechletV2
 	static String resumequizzenMsg = "Do you want to play a quiz instead or quit the app??";
 	static String errorresumequizzen = "Sorry I did not understand that. Please say quiz or quit the app.";
 	static String resumeVokabelnMsg = "Do you want to the some vocabulary instead or quit the app?";
+	static String ThemesMsg = "The following themes are possible: basics, expressions, food, animals and antonyms. If you wanna learn vocabulary from a certain area, say the corresponding word.";
 	
 
 	private String buildString(String msg, String replacement1, String replacement2) {
@@ -182,12 +183,11 @@ implements SpeechletV2
 		Connection con = AlexaSkillSpeechlet.connect(); 
 		  PreparedStatement ps = null; 
 		  ResultSet rs = null; 
-		  
-		  
-		  try {
+
+		switch(questions){  
+		case 1: try {
 			 logger.info("Try-Block");
 			 
-			//String sql = "SELECT * FROM Vokabelliste WHERE Thema LIKE 'Grundlagen' ORDER BY RANDOM() LIMIT 1";
 		    String sql = "SELECT * FROM Vokabelliste ORDER BY RANDOM() LIMIT 1";
 		    ps = con.prepareStatement(sql); 
 		    rs = ps.executeQuery();
@@ -204,94 +204,103 @@ implements SpeechletV2
 		  	   catch(SQLException e) {
 		    //System.out.println(e.toString());
 		  } 
-		  return null;
-		  }
-	
-private String selectQuestion2() {
 		
-		Answer = "correct answer";
-		
-		Connection con = AlexaSkillSpeechlet.connect(); 
-		  PreparedStatement ps = null; 
-		  ResultSet rs = null; 
-		  
-		  
-		  try {
-			 logger.info("Try-Block");
-			 
-			String sql = "SELECT * FROM Vokabelliste WHERE Thema LIKE 'Grundlagen' ORDER BY RANDOM() LIMIT 1";
-		    //String sql = "SELECT * FROM Vokabelliste ORDER BY RANDOM() LIMIT 1";
-		    ps = con.prepareStatement(sql); 
-		    rs = ps.executeQuery();
-		    
-		    while(rs.next()) {
-		     //int number = rs.getInt("number");
-		     question = rs.getString("de"); 
-		     correctAnswer = rs.getString("en");
-		     String Thema = rs.getString("Thema");
-		     return question+correctAnswer;
-		       
-		    }
-		      	  }
-		  	   catch(SQLException e) {
-		    //System.out.println(e.toString());
-		  } 
-		  return null;
-		  }
-		
-private String selectQuestion3() {
-	
-	Answer = "correct answer";
-	
-	Connection con = AlexaSkillSpeechlet.connect(); 
-	  PreparedStatement ps = null; 
-	  ResultSet rs = null; 
-	  
-	  
-	  try {
-		 logger.info("Try-Block");
+		case 2: try {
+			logger.info("Try-Block");
 		 
-		String sql = "SELECT * FROM Vokabelliste WHERE Thema LIKE 'Ausdrücke' ORDER BY RANDOM() LIMIT 1";
-	    //String sql = "SELECT * FROM Vokabelliste ORDER BY RANDOM() LIMIT 1";
-	    ps = con.prepareStatement(sql); 
-	    rs = ps.executeQuery();
+			String sql = "SELECT * FROM Vokabelliste WHERE Thema LIKE 'Grundlagen' ORDER BY RANDOM() LIMIT 1";
+			ps = con.prepareStatement(sql); 
+			rs = ps.executeQuery();
 	    
-	    while(rs.next()) {
-	     //int number = rs.getInt("number");
-	     question = rs.getString("de"); 
-	     correctAnswer = rs.getString("en");
-	     String Thema = rs.getString("Thema");
-	     return question+correctAnswer;
+			while(rs.next()) {
+				/*int number = rs.getInt("number");*/
+				question = rs.getString("de"); 
+				correctAnswer = rs.getString("en");
+				String Thema = rs.getString("Thema");
+				return question+correctAnswer;
 	       
 	    }
 	      	  }
 	  	   catch(SQLException e) {
 	    //System.out.println(e.toString());
 	  } 
-	  return null;
+		case 3: try {
+			logger.info("Try-Block");
+		 
+			String sql = "SELECT * FROM Vokabelliste WHERE Thema LIKE 'Ausdrücke' ORDER BY RANDOM() LIMIT 1";
+			ps = con.prepareStatement(sql); 
+			rs = ps.executeQuery();
+	    
+			while(rs.next()) {
+				/*int number = rs.getInt("number");*/
+				question = rs.getString("de"); 
+				correctAnswer = rs.getString("en");
+				String Thema = rs.getString("Thema");
+				return question+correctAnswer;
+	       
+	    }
+	      	  }
+	  	   catch(SQLException e) {
+	    //System.out.println(e.toString());
 	  }
-	
-	private String selectAntonym() {
-		
-		Connection con = AlexaSkillSpeechlet.connect(); 
-		  PreparedStatement ps = null; 
-		  ResultSet rs = null; 
-		  
-		  try {
-			 logger.info("Try-Block");
-			 String sql2 = "SELECT * FROM gegenteile ORDER BY RANDOM() LIMIT 1";
-			    ps = con.prepareStatement(sql2); 
-			    rs = ps.executeQuery();
-			    while(rs.next()) {
-			     antonym = rs.getString("word"); 
-			     correctAnswer2 = rs.getString("antonym");
-			      return antonym+correctAnswer2;  
-			    }
-			      }
-		     catch(SQLException e) {
-		    //System.out.println(e.toString());
-		  } 
-		 // return question+correctAnswer;
+		case 4: try {
+			logger.info("Try-Block");
+		 
+			String sql = "SELECT * FROM Vokabelliste WHERE Thema LIKE 'Essen' ORDER BY RANDOM() LIMIT 1";
+			ps = con.prepareStatement(sql); 
+			rs = ps.executeQuery();
+	    
+			while(rs.next()) {
+				/*int number = rs.getInt("number");*/
+				question = rs.getString("de");   
+				correctAnswer = rs.getString("en");
+				String Thema = rs.getString("Thema");
+				return question+correctAnswer;
+	       
+	    }
+	      	  }
+	  	   catch(SQLException e) {
+	    //System.out.println(e.toString());
+	  }
+		case 5: try {
+			logger.info("Try-Block");
+		 
+			String sql = "SELECT * FROM Vokabelliste WHERE Thema LIKE 'Tiere' ORDER BY RANDOM() LIMIT 1";
+			ps = con.prepareStatement(sql); 
+			rs = ps.executeQuery();
+	    
+			while(rs.next()) {
+				/*int number = rs.getInt("number");*/
+				question = rs.getString("de"); 
+				correctAnswer = rs.getString("en");
+				String Thema = rs.getString("Thema");
+				return question+correctAnswer;
+	       
+	    }
+	      	  }
+	  	   catch(SQLException e) {
+	    //System.out.println(e.toString());
+	  }
+		case 6: try {
+			logger.info("Try-Block");
+		 
+			String sql = "SELECT * FROM gegenteile ORDER BY RANDOM() LIMIT 1";
+			ps = con.prepareStatement(sql); 
+			rs = ps.executeQuery();
+	    
+			while(rs.next()) {
+				/*int number = rs.getInt("number");*/
+				question = rs.getString("de"); 
+				correctAnswer = rs.getString("en");
+				String Thema = rs.getString("Thema");
+				return question+correctAnswer;
+	       
+	    }
+	      	  }
+	  	   catch(SQLException e) {
+	    //System.out.println(e.toString());
+	  }
+	}
 		  return null;
 		  }
 
@@ -324,16 +333,14 @@ private String selectQuestion3() {
 		case YesNoLevelTwo: resp = evaluateYesNoLevelTwo(userRequest); break;
 		case AgainOrMenu: resp = evaluateAgainOrMenu(userRequest); break;
 		case SingleQuiz: resp = evaluateSingleQuiz(userRequest); break;
+		case SingleThemes: resp = evaluateSingleThemes(userRequest); break;
+		case MultiThemes: resp = evaluateMultiThemes(userRequest); break;
 		case YesNoQuizLevelOne: resp = evaluateYesNoQuizLevelOne(userRequest); break;
 		case YesNoQuizLevelTwo: resp = evaluateYesNoQuizLevelTwo(userRequest); break;
 		case YesNoQuizLevelThree: resp = evaluateYesNoQuizLevelThree(userRequest); break;
 		case YesNoQuizLevelEnd: resp = evaluateYesNoQuizLevelEnd(userRequest); break;
 		case YesNoVokabelnEasy: resp = evaluateYesNoVokabelnEasy(userRequest); break;
-		case YesNoVokabelnBasics: resp = evaluateYesNoVokabelnBasics(userRequest); break;
-		//case YesNoVokabelnHard: resp = evaluateYesNoVokabelnHard(userRequest); break;
 		case AnswerVokabelnEasy: resp = evaluateAnswerVokabelnEasy(userRequest); break;
-		//case AnswerVokabelnMedium: resp = evaluateAnswerVokabelnMedium(userRequest); break;
-		//case AnswerVokabelnHard: resp = evaluateAnswerVokabelnHard(userRequest); break;
 		case AnswerQuizLevelOne: resp = evaluateAnswerQuizLevelOne(userRequest); break;
 		case AnswerQuizLevelTwo: resp = evaluateAnswerQuizLevelTwo(userRequest); break;
 		case AnswerQuizLevelThree: resp = evaluateAnswerQuizLevelThree(userRequest); break;
@@ -349,10 +356,12 @@ private String selectQuestion3() {
 		recognizeUserIntent(userRequest);
 		switch (ourUserIntent) {
 		case resume: {
+			increaseQuestions();
 			selectQuestion();
 			res = responseWithFlavour(question, 6);
 			recState = RecognitionState.AnswerVokabelnEasy; break;
 		} case yess: {
+			increaseQuestions();
 			selectQuestion();
 			res = responseWithFlavour(question, 6);
 			recState = RecognitionState.AnswerVokabelnEasy; break;
@@ -365,7 +374,12 @@ private String selectQuestion3() {
 		} case menu: {
 			res = responseWithFlavour(welcomeMsg, 5);
 			recState = RecognitionState.OneTwo; break;
-		} case difficulty: {
+		} case themes: {
+			questions = 1;
+			res = askUserResponse(ThemeMsg);
+			recState = RecognitionState.Vokabel; break;
+		} case vocabulary: {
+			questions = 1;
 			res = askUserResponse(ThemeMsg);
 			recState = RecognitionState.Vokabel; break;
 		} default: {
@@ -375,33 +389,52 @@ private String selectQuestion3() {
 		return res;
 	}
 	
-	private SpeechletResponse evaluateYesNoVokabelnBasics(String userRequest) {	
+	/*Vokabeln allgemein oder bestimmtes Theme?*/
+	private SpeechletResponse evaluateVokabel(String userRequest) {
 		SpeechletResponse res = null;
-		
 		recognizeUserIntent(userRequest);
 		switch (ourUserIntent) {
-		case resume: {
-			selectQuestion2();
+		case any: {
+			questions = 1;
+			increaseQuestions();
+			selectQuestion();
 			res = responseWithFlavour(question, 6);
 			recState = RecognitionState.AnswerVokabelnEasy; break;
-		} case yess: {
-			selectQuestion2();
+		} case basics: {
+			questions = 2;
+			increaseQuestions();
+			selectQuestion();
 			res = responseWithFlavour(question, 6);
 			recState = RecognitionState.AnswerVokabelnEasy; break;
-			
-		} case quit: {
-			res = responseWithFlavour2(goodbyeMsg, 0); break;
-		} case no: {
-			res = responseWithFlavour2(goodbyeMsg, 0); break;
-			
+		} case expressions: {
+			questions = 3;
+			increaseQuestions();
+			selectQuestion();
+			res = responseWithFlavour(question, 6);
+			recState = RecognitionState.AnswerVokabelnEasy; break;
+		} case food: {
+			questions = 4;
+			increaseQuestions();
+			selectQuestion();
+			res = responseWithFlavour(question, 6);
+			recState = RecognitionState.AnswerVokabelnEasy; break;
+		} case animals: {
+			questions = 5;
+			increaseQuestions();
+			selectQuestion();
+			res = responseWithFlavour(question, 6);
+			recState = RecognitionState.AnswerVokabelnEasy; break;
+		} case antonyms: {
+			questions = 6;
+			increaseQuestions();
+			selectQuestion();
+			res = responseWithFlavour(question, 6);
+			recState = RecognitionState.AnswerVokabelnEasy; break;
 		} case menu: {
 			res = responseWithFlavour(welcomeMsg, 5);
 			recState = RecognitionState.OneTwo; break;
-		} case difficulty: {
-			res = askUserResponse(ThemeMsg);
-			recState = RecognitionState.Vokabel; break;
 		} default: {
-			res = askUserResponse(errorYesNoMsg);
+			res = askUserResponse(errorVokabelMsg);
 		}
 		}
 		return res;
@@ -413,12 +446,14 @@ private String selectQuestion3() {
 		recognizeUserIntent(userRequest);
 		switch (ourUserIntent) {
 		case resume: {
-			selectAntonym();
-			res = responseWithFlavour(antonymMsg+" "+antonym+"?",0);
+			increaseQuestions();
+			selectQuestion();
+			res = responseWithFlavour(question, 6);
 			recState = RecognitionState.AnswerQuizLevelOne; break;
 		} case yess: {
-			selectAntonym();
-			res = responseWithFlavour(antonymMsg+" "+antonym+"?",0);
+			increaseQuestions();
+			selectQuestion();
+			res = responseWithFlavour(question, 6);
 			recState = RecognitionState.AnswerQuizLevelOne; break;
 			
 		} case quit: {
@@ -441,12 +476,14 @@ private String selectQuestion3() {
 		recognizeUserIntent(userRequest);
 		switch (ourUserIntent) {
 		case resume: {
-			selectAntonym();
-			res = responseWithFlavour(/*"Here we go:"+" "+*/antonymMsg+" "+antonym+"?",0);
+			increaseQuestions();
+			selectQuestion();
+			res = responseWithFlavour(question, 6);
 			recState = RecognitionState.AnswerQuizLevelTwo; break;
 		} case yess: {
-			selectAntonym();
-			res = responseWithFlavour(/*"Here we go:"+" "+*/antonymMsg+" "+antonym+"?",0);
+			increaseQuestions();
+			selectQuestion();
+			res = responseWithFlavour(question, 6);
 			recState = RecognitionState.AnswerQuizLevelTwo; break;
 			
 		} case quit: {
@@ -470,12 +507,14 @@ private String selectQuestion3() {
 		recognizeUserIntent(userRequest);
 		switch (ourUserIntent) {
 		case resume: {
-			selectAntonym();
-			res = responseWithFlavour(/*"Here we go:"+" "+*/antonymMsg+" "+antonym+"?",0);
+			increaseQuestions();
+			selectQuestion();
+			res = responseWithFlavour(question, 6);
 			recState = RecognitionState.AnswerQuizLevelThree; break;
 		} case yess: {
-			selectAntonym();
-			res = responseWithFlavour(/*"Here we go:"+" "+*/antonymMsg+" "+antonym+"?",0);
+			increaseQuestions();
+			selectQuestion();
+			res = responseWithFlavour(question, 6);
 			recState = RecognitionState.AnswerQuizLevelThree; break;
 			
 		} case quit: {
@@ -499,12 +538,14 @@ private String selectQuestion3() {
 		recognizeUserIntent(userRequest);
 		switch (ourUserIntent) {
 		case resume: {
-			selectAntonym();
-			res = responseWithFlavour("Alright let's go on with the Quiz!"+" "+antonymMsg+" "+antonym+"?",0);
+			increaseQuestions();
+			selectQuestion();
+			res = responseWithFlavour(question, 6);
 			recState = RecognitionState.AnswerQuizLevelThree; break;
 		} case yess: {
-			selectAntonym();
-			res = responseWithFlavour("Alright let's go on with the Quiz!"+" "+antonymMsg+" "+antonym+"?",0);
+			increaseQuestions();
+			selectQuestion();
+			res = responseWithFlavour(question, 6);
 			recState = RecognitionState.AnswerQuizLevelThree; break;
 			
 		} case quit: {
@@ -512,10 +553,14 @@ private String selectQuestion3() {
 		} case no: {
 			res = responseWithFlavour2(goodbyeMsg, 0); break;
 		} case levelone: {
-			res = responseWithFlavour("Here we go:"+" "+antonymMsg+" "+antonym+"?",0);
+			increaseQuestions();
+			selectQuestion();
+			res = responseWithFlavour("Here we go:"+" "+question ,0);
 			recState = RecognitionState.AnswerQuizLevelOne; break;
 		} case leveltwo: {
-			res = responseWithFlavour("Here we go:"+" "+antonymMsg+" "+antonym+"?",0);
+			increaseQuestions();
+			selectQuestion();
+			res = responseWithFlavour("Here we go:"+" "+question ,0);
 			recState = RecognitionState.AnswerQuizLevelTwo; break;
 			
 		} case menu: {
@@ -536,10 +581,12 @@ private String selectQuestion3() {
 		recognizeUserIntent(userRequest);
 		switch (ourUserIntent) {
 		case resume: {
+			increaseQuestions();
 			selectQuestion();
 			res = responseWithFlavour(question, 6);
 			recState = RecognitionState.Answer; break;
 		} case yess: {
+			increaseQuestions();
 			selectQuestion();
 			res = responseWithFlavour(question, 6);
 			recState = RecognitionState.Answer; break;	
@@ -563,10 +610,12 @@ private String selectQuestion3() {
 		recognizeUserIntent(userRequest);
 		switch (ourUserIntent) {
 		case resume: {
+			increaseQuestions();
 			selectQuestion();
 			res = responseWithFlavour(question, 6);
 			recState = RecognitionState.WhichPlayer; break;
 		} case yess: {
+			increaseQuestions();
 			selectQuestion();
 			res = responseWithFlavour(question, 6);
 			recState = RecognitionState.WhichPlayer; break;
@@ -590,10 +639,12 @@ private String selectQuestion3() {
 		recognizeUserIntent(userRequest);
 		switch (ourUserIntent) {
 		case resume: {
+			increaseQuestions();
 			selectQuestion();
 			res = responseWithFlavour(question, 6);
 			recState = RecognitionState.WhichPlayerThree; break;
 		} case yess: {
+			increaseQuestions();
 			selectQuestion();
 			res = responseWithFlavour(question, 6);
 			recState = RecognitionState.WhichPlayerThree; break;
@@ -617,10 +668,12 @@ private String selectQuestion3() {
 		recognizeUserIntent(userRequest);
 		switch (ourUserIntent) {
 		case resume: {
+			increaseQuestions();
 			selectQuestion();
 			res = responseWithFlavour(question, 6);
 			recState = RecognitionState.WhichPlayerFour; break;
 		} case yess: {
+			increaseQuestions();
 			selectQuestion();
 			res = responseWithFlavour(question, 6);
 			recState = RecognitionState.WhichPlayerFour; break;
@@ -650,6 +703,7 @@ private String selectQuestion3() {
 			sum5 = 0;
 			sum6 = 0;
 			sum7 = 0;
+			increaseQuestions();
 			selectQuestion();
 			res = responseWithFlavour(question, 6);
 			recState = RecognitionState.WhichPlayer; break;
@@ -678,18 +732,89 @@ private String selectQuestion3() {
 		recognizeUserIntent(userRequest);
 		switch (ourUserIntent) {
 		case onne: {
+			sum = 0;
+			sum2 = 0;
+			sum3 = 0;
+			sum4 = 0;
+			sum5 = 0;
+			sum6 = 0;
+			sum7 = 0;
 			res = askUserResponse(singleMsg);
 			recState = RecognitionState.VokabelQuiz; break;
 		} case twwo: {
-			selectQuestion();
-			res = responseWithFlavour(question, 10);
-			recState = RecognitionState.WhichPlayer; break;
+			sum = 0;
+			sum2 = 0;
+			sum3 = 0;
+			sum4 = 0;
+			sum5 = 0;
+			sum6 = 0;
+			sum7 = 0;
+			res = askUserResponse(multiMsg);
+			recState = RecognitionState.MultiThemes; break;
+			//selectQuestion();
+			//res = responseWithFlavour(question, 10);
+			//recState = RecognitionState.WhichPlayer; break;
 		} default: {
 			res = askUserResponse(errorOneTwoMsg);
 		}
 		}
 		return res;
 	}
+	
+	/*Multiplayer Vokabeln allgemein oder bestimmtes Theme?*/
+	private SpeechletResponse evaluateMultiThemes(String userRequest) {
+		SpeechletResponse res = null;
+		recognizeUserIntent(userRequest);
+		switch (ourUserIntent) {
+		case any: {
+			questions = 1;
+			increaseQuestions();
+			selectQuestion();
+			res = responseWithFlavour(question, 6);
+			recState = RecognitionState.WhichPlayer; break;
+		} case basics: {
+			questions = 2;
+			increaseQuestions();
+			selectQuestion();
+			res = responseWithFlavour(question, 6);
+			recState = RecognitionState.WhichPlayer; break;
+		} case expressions: {
+			questions = 3;
+			increaseQuestions();
+			selectQuestion();
+			res = responseWithFlavour(question, 6);
+			recState = RecognitionState.WhichPlayer; break;
+		} case food: {
+			questions = 4;
+			increaseQuestions();
+			selectQuestion();
+			res = responseWithFlavour(question, 6);
+			recState = RecognitionState.WhichPlayer; break;
+		} case animals: {
+			questions = 5;
+			increaseQuestions();
+			selectQuestion();
+			res = responseWithFlavour(question, 6);
+			recState = RecognitionState.WhichPlayer; break;
+		} case antonyms: {
+			questions = 6;
+			increaseQuestions();
+			selectQuestion();
+			res = responseWithFlavour(question, 6);
+			recState = RecognitionState.WhichPlayer; break;
+		} case themes: {
+			res = askUserResponse(ThemesMsg);
+			recState = RecognitionState.MultiThemes; break;
+		} case menu: {
+			res = responseWithFlavour(welcomeMsg, 5);
+			recState = RecognitionState.OneTwo; break;
+		} default: {
+			res = askUserResponse(errorVokabelMsg);
+		}
+		}
+		return res;
+	}
+
 	
 	/*Vokabeln oder Quiz?*/
 	private SpeechletResponse evaluateVokabelQuiz(String userRequest) {
@@ -700,9 +825,8 @@ private String selectQuestion3() {
 			res = askUserResponse(ThemeMsg);
 			recState = RecognitionState.Vokabel; break;
 		} case quiz: {
-			selectAntonym();
-			res = responseWithFlavour(singleQuizMsg+" "+antonymMsg+" "+antonym+"?",0);
-			recState = RecognitionState.AnswerQuizLevelOne; break;
+			res = askUserResponse(ThemeMsg);
+			recState = RecognitionState.SingleThemes; break;
 		} case menu: {
 			res = responseWithFlavour(welcomeMsg, 5);
 			recState = RecognitionState.OneTwo; break;
@@ -712,28 +836,51 @@ private String selectQuestion3() {
 		}
 		return res;
 	}
-
-	/*Schwierigkeit einfach, mittel oder schwer?*/
-	private SpeechletResponse evaluateVokabel(String userRequest) {
+	
+	/*Multiplayer Vokabeln allgemein oder bestimmtes Theme?*/
+	private SpeechletResponse evaluateSingleThemes(String userRequest) {
 		SpeechletResponse res = null;
 		recognizeUserIntent(userRequest);
 		switch (ourUserIntent) {
-		case easy: {
+		case any: {
+			questions = 1;
+			increaseQuestions();
 			selectQuestion();
 			res = responseWithFlavour(question, 6);
-			recState = RecognitionState.AnswerVokabelnEasy; break;
+			recState = RecognitionState.AnswerQuizLevelOne; break;
 		} case basics: {
-			selectQuestion2();
+			questions = 2;
+			increaseQuestions();
+			selectQuestion();
 			res = responseWithFlavour(question, 6);
-			recState = RecognitionState.AnswerVokabelnEasy; break;
+			recState = RecognitionState.AnswerQuizLevelOne; break;
 		} case expressions: {
-			selectQuestion3();
+			questions = 3;
+			increaseQuestions();
+			selectQuestion();
 			res = responseWithFlavour(question, 6);
-			recState = RecognitionState.AnswerVokabelnEasy; break;
-		/*} case hard: {
-			selectQuestion11();
-			res = askUserResponse(question11);
-			recState = RecognitionState.AnswerVokabelnHard; break;*/
+			recState = RecognitionState.AnswerQuizLevelOne; break;
+		} case food: {
+			questions = 4;
+			increaseQuestions();
+			selectQuestion();
+			res = responseWithFlavour(question, 6);
+			recState = RecognitionState.AnswerQuizLevelOne; break;
+		} case animals: {
+			questions = 5;
+			increaseQuestions();
+			selectQuestion();
+			res = responseWithFlavour(question, 6);
+			recState = RecognitionState.AnswerQuizLevelOne; break;
+		} case antonyms: {
+			questions = 6;
+			increaseQuestions();
+			selectQuestion();
+			res = responseWithFlavour(question, 6);
+			recState = RecognitionState.AnswerQuizLevelOne; break;
+		} case themes: {
+			res = askUserResponse(ThemesMsg);
+			recState = RecognitionState.SingleThemes; break;
 		} case menu: {
 			res = responseWithFlavour(welcomeMsg, 5);
 			recState = RecognitionState.OneTwo; break;
@@ -743,6 +890,8 @@ private String selectQuestion3() {
 		}
 		return res;
 	}
+
+
 	
 	/* sind sie bereit? */
 	private SpeechletResponse evaluateSingleQuiz(String userRequest) {
@@ -752,8 +901,8 @@ private String selectQuestion3() {
 		
 		
 		case yess: {
-			selectAntonym();
-			res = responseWithFlavour("Alright let's go on with the Quiz!"+" "+antonymMsg+" "+antonym+"?",0);
+			selectQuestion();
+			res = responseWithFlavour(question, 6);
 			recState = RecognitionState.AnswerQuiz; break;
 		} 
 		
@@ -788,6 +937,10 @@ private String selectQuestion3() {
 		} case menu: {
 			res = responseWithFlavour(welcomeMsg, 5);
 			recState = RecognitionState.OneTwo; break;
+		} case answer: {
+			res = askUserResponse(correctAnswerMsg+" "+correctAnswer+". "+continueMsg);
+			recState = RecognitionState.YesNoTwo; break;	
+			
 		} default: {
 			res = askUserResponse(errorSpielereinszweiMsg);
 		}
@@ -815,6 +968,9 @@ private String selectQuestion3() {
 		} case menu: {
 			res = responseWithFlavour(welcomeMsg, 5);
 			recState = RecognitionState.OneTwo; break;
+		} case answer: {
+			res = askUserResponse(correctAnswerMsg+" "+correctAnswer+". "+continueMsg);
+			recState = RecognitionState.YesNoLevel; break;	
 		} default: {
 			res = askUserResponse(errorSpielereinszweiMsg);
 		}
@@ -842,6 +998,9 @@ private String selectQuestion3() {
 		} case menu: {
 			res = responseWithFlavour(welcomeMsg, 5);
 			recState = RecognitionState.OneTwo; break;
+		} case answer: {
+			res = askUserResponse(correctAnswerMsg+" "+correctAnswer+". "+continueMsg);
+			recState = RecognitionState.YesNoLevelTwo; break;	
 		} default: {
 			res = askUserResponse(errorSpielereinszweiMsg);
 		}
@@ -875,29 +1034,27 @@ private String selectQuestion3() {
 	private SpeechletResponse evaluateAnswerQuizLevelOne(String userRequest) {
 		SpeechletResponse res = null;
 		recognizeUserIntent(userRequest);{
-			logger.info("User answer ="+ userRequest.toLowerCase()+ "/correct answer="+correctAnswer2);
-			if (userRequest.toLowerCase().equals(correctAnswer2.toLowerCase())) {
+			logger.info("User answer ="+ userRequest.toLowerCase()+ "/correct answer="+correctAnswer);
+			if (userRequest.toLowerCase().equals(correctAnswer.toLowerCase())) {
 				logger.info("User answer recognized as correct.");
 					increaseSum();
 					if (sum >= 50) {
 						recState = RecognitionState.YesNoQuizLevelTwo;
 						res = responseWithFlavour(correctMsg+" "+buildString(sumMsg, String.valueOf(sum), " ")+" "+continueEinzelQuizLevelTwoMsg, 9);
+					
 					} else {
 						recState = RecognitionState.YesNoQuizLevelOne;
 						res = responseWithFlavour(correctMsg+" "+buildString(sumMsg, String.valueOf(sum), " ")+" "+continueMsg, 8);
 						
 					}
-		// Case für den Fall, falls der User keine antwort abgeben möchte, sondern nur etwas wie "I don't know":
-					
-		 /* } else if (userRequest.toLowerCase().equals("dont know")) {
-				recState = RecognitionState.YesNoQuizLevelOne;
-				res = responseWithFlavour(dontknowMsg+" "+correctAnswer2+". "+buildString(sumMsg, String.valueOf(sum), " ")+" "+continueMsg,0);
-			*/	
-				
+			}else if (userRequest.toLowerCase().equals(Answer)) {
+				 logger.info("User doesn´t know the answer.");
+				 recState = RecognitionState.YesNoQuizLevelOne;
+					 res = askUserResponse(correctAnswerMsg+" "+correctAnswer+". "+continueMsg);
 		  } else {
 					
 					recState = RecognitionState.YesNoQuizLevelOne;
-					res = responseWithFlavour(wrongMsg+" "+correctAnswer2+". "+buildString(sumMsg, String.valueOf(sum), " ")+" "+continueMsg, 7);
+					res = responseWithFlavour(wrongMsg+" "+correctAnswer+". "+buildString(sumMsg, String.valueOf(sum), " ")+" "+continueMsg, 7);
 					// wrongVocMsg+" "+correctAnswer+". "+continueMsg,7
 				}
 			} 
@@ -908,20 +1065,25 @@ private String selectQuestion3() {
 	private SpeechletResponse evaluateAnswerQuizLevelTwo(String userRequest) {
 		SpeechletResponse res = null;
 		recognizeUserIntent(userRequest);{
-			logger.info("User answer ="+ userRequest.toLowerCase()+ "/correct answer="+correctAnswer2);
-			if (userRequest.toLowerCase().equals(correctAnswer2.toLowerCase())) {
+			logger.info("User answer ="+ userRequest.toLowerCase()+ "/correct answer="+correctAnswer);
+			if (userRequest.toLowerCase().equals(correctAnswer.toLowerCase())) {
 				logger.info("User answer recognized as correct.");
 					increaseSum();
 					if (sum >= 100) {
 						recState = RecognitionState.YesNoQuizLevelThree;
 						res = responseWithFlavour(correctMsg+" "+buildString(sumMsg, String.valueOf(sum), " ")+" "+continueEinzelQuizLevelThreeMsg, 9);
+					
 					} else {
 						recState = RecognitionState.YesNoQuizLevelTwo;
 						res = responseWithFlavour(correctMsg+" "+buildString(sumMsg, String.valueOf(sum), " ")+" "+continueMsg, 8);
 					}
+			}else if (userRequest.toLowerCase().equals(Answer)) {
+				 logger.info("User doesn´t know the answer.");
+				 	 recState = RecognitionState.YesNoQuizLevelTwo;
+					 res = askUserResponse(correctAnswerMsg+" "+correctAnswer+". "+continueMsg);
 				} else {
 					recState = RecognitionState.YesNoQuizLevelTwo;
-					res = responseWithFlavour(wrongMsg+" "+correctAnswer2+". "+buildString(sumMsg, String.valueOf(sum), " ")+" "+continueMsg, 7);
+					res = responseWithFlavour(wrongMsg+" "+correctAnswer+". "+buildString(sumMsg, String.valueOf(sum), " ")+" "+continueMsg, 7);
 				}
 			} 
 		return res;
@@ -931,20 +1093,25 @@ private String selectQuestion3() {
 	private SpeechletResponse evaluateAnswerQuizLevelThree(String userRequest) {
 		SpeechletResponse res = null;
 		recognizeUserIntent(userRequest);{
-			logger.info("User answer ="+ userRequest.toLowerCase()+ "/correct answer="+correctAnswer2);
-			if (userRequest.toLowerCase().equals(correctAnswer2.toLowerCase())) {
+			logger.info("User answer ="+ userRequest.toLowerCase()+ "/correct answer="+correctAnswer);
+			if (userRequest.toLowerCase().equals(correctAnswer.toLowerCase())) {
 				logger.info("User answer recognized as correct.");
 					increaseSum();
 					if (sum >= 150) {
 						recState = RecognitionState.YesNoQuizLevelEnd;
 						res = responseWithFlavour(correctMsg+" "+buildString(sumMsg, String.valueOf(sum), " ")+" "+continueEinzelQuizEndMsg, 9);
+					
 					} else {
 						recState = RecognitionState.YesNoQuizLevelThree;
 						res = responseWithFlavour(correctMsg+" "+buildString(sumMsg, String.valueOf(sum), " ")+" "+continueMsg, 8);
 					}
+			}else if (userRequest.toLowerCase().equals(Answer)) {
+				 logger.info("User doesn´t know the answer.");
+				 recState = RecognitionState.YesNoQuizLevelThree;
+				 res = askUserResponse(correctAnswerMsg+" "+correctAnswer+". "+continueMsg);
 				} else {
 					recState = RecognitionState.YesNoQuizLevelThree;
-					res = responseWithFlavour(wrongMsg+" "+correctAnswer2+". "+buildString(sumMsg, String.valueOf(sum), " ")+" "+continueMsg, 7);
+					res = responseWithFlavour(wrongMsg+" "+correctAnswer+". "+buildString(sumMsg, String.valueOf(sum), " ")+" "+continueMsg, 7);
 				}
 			} 
 		return res;
@@ -1092,6 +1259,21 @@ private String selectQuestion3() {
 				}
 			} 
 				return res;
+	}
+	
+	private void increaseQuestions() {
+		switch(questions){
+		case 1: questions = 1; break;
+		case 2: questions = 2; break;
+		case 3: questions = 3; break;
+		case 4: questions = 4; break;
+		case 5: questions = 5; break;
+		case 6: questions = 6; break;
+		case 7: questions = 7; break;
+		case 8: questions = 8; break;
+		case 9: questions = 9; break;
+		case 10: questions = 10; break;
+		}
 	}
 
 
@@ -1283,7 +1465,7 @@ private String selectQuestion3() {
 		String pattern3 = "(.*)?(\\b(two)|(2)\\b)(.*)?";
 		String pattern4 = "(.*)?(\\b(vocabulary)|(vocab)\\b)(.*)?";
 		String pattern5 = "(.*)?(\\bquiz\\b)(.*)?";
-		String pattern6 = "(.*)?(\\beasy\\b)(.*)?";
+		//String pattern6 = "(.*)?(\\beasy\\b)(.*)?";
 		String pattern7 = "(.*)?(\\bbasics\\b)(.*)?";
 		String pattern8 = "(.*)?(\\bexpressions\\b)(.*)?";
 		String pattern9 = "(.*)?(\\bone\\b)(.*)?";
@@ -1294,12 +1476,16 @@ private String selectQuestion3() {
 		String pattern14 = "(.*)?(\\bno\\b)(.*)?";
 		String pattern15 = "(.*)?(\\bquiz\\b)(.*)?";
 		String pattern16 = "(.*)?(\\bquit\\b)(.*)?";
-		String pattern17 = "(.*)?(\\bdifficulty\\b)(.*)?";
+		String pattern17 = "(.*)?(\\bthemes\\b)(.*)?";
 		String pattern18 = "(.*)?(\\bvocab\\b)(.*)?";
 		String pattern19 = "(.*)?(\\blevel\\sone\\b)(.*)?";
 		String pattern20 = "(.*)?(\\blevel\\stwo\\b)(.*)?";
-		//String pattern21 = "(I)?(don´t)?(know)?(what)?(is)?(the)?(correct)?(right)?(answer)?";
+		String pattern21 = "(.*)?(\\bcorrect\\sanswer\\b)(.*)?";
 		String pattern22 = "(.*)?(\\bagain\\b)(.*)?";
+		String pattern23 = "(.*)?(\\bfood\\b)(.*)?";
+		String pattern24 = "(.*)?(\\banimals\\b)(.*)?";
+		String pattern25 = "(.*)?(\\bantonyms\\b)(.*)?";
+		String pattern100 = "(.*)?";
 		
 		
 		
@@ -1313,8 +1499,8 @@ private String selectQuestion3() {
 		Matcher m4= p4.matcher(userRequest);
 		Pattern p5 = Pattern.compile(pattern5);
 		Matcher m5= p5.matcher(userRequest);
-		Pattern p6 = Pattern.compile(pattern6);
-		Matcher m6= p6.matcher(userRequest);
+		//Pattern p6 = Pattern.compile(pattern6);
+		//Matcher m6= p6.matcher(userRequest);
 		Pattern p7 = Pattern.compile(pattern7);
 		Matcher m7= p7.matcher(userRequest);
 		Pattern p8 = Pattern.compile(pattern8);
@@ -1343,10 +1529,18 @@ private String selectQuestion3() {
 		Matcher m19 = p19.matcher(userRequest);
 		Pattern p20 = Pattern.compile(pattern20);
 		Matcher m20 = p20.matcher(userRequest);
-		//Pattern p21 = Pattern.compile(pattern21);
-		//Matcher m21 = p21.matcher(userRequest);
+		Pattern p21 = Pattern.compile(pattern21);
+		Matcher m21 = p21.matcher(userRequest);
 		Pattern p22 = Pattern.compile(pattern22);
 		Matcher m22 = p22.matcher(userRequest);
+		Pattern p23 = Pattern.compile(pattern23);
+		Matcher m23 = p23.matcher(userRequest);
+		Pattern p24 = Pattern.compile(pattern24);
+		Matcher m24 = p24.matcher(userRequest);
+		Pattern p25 = Pattern.compile(pattern25);
+		Matcher m25 = p25.matcher(userRequest);
+		Pattern p100 = Pattern.compile(pattern100);
+		Matcher m100 = p100.matcher(userRequest);
 		
 		
 		if (m1.find()) {
@@ -1359,8 +1553,8 @@ private String selectQuestion3() {
 			ourUserIntent = UserIntent.vocabulary;
 		} else if (m5.find()) {
 			ourUserIntent = UserIntent.quiz;
-		} else if (m6.find()) {
-			ourUserIntent = UserIntent.easy;
+		//} else if (m6.find()) {
+		//	ourUserIntent = UserIntent.easy;
 		} else if (m7.find()) {
 			ourUserIntent = UserIntent.basics;
 		} else if (m8.find()) {
@@ -1382,17 +1576,25 @@ private String selectQuestion3() {
 		} else if (m16.find()) {
 			ourUserIntent = UserIntent.quit;
 		} else if (m17.find()) {
-			ourUserIntent = UserIntent.difficulty;
+			ourUserIntent = UserIntent.themes;
 		} else if (m18.find()) {
 			ourUserIntent = UserIntent.vocab;
 		} else if (m19.find()) {
 			ourUserIntent = UserIntent.levelone;
 		} else if (m20.find()) {
 			ourUserIntent = UserIntent.leveltwo;
-		//} else if (m21.find()) {
-		//	ourUserIntent = UserIntent.Answer;
+		} else if (m21.find()) {
+			ourUserIntent = UserIntent.answer;
 		} else if (m22.find()) {
 			ourUserIntent = UserIntent.again;
+		} else if (m23.find()) {
+			ourUserIntent = UserIntent.food;
+		} else if (m24.find()) {
+			ourUserIntent = UserIntent.animals;
+		} else if (m25.find()) {
+			ourUserIntent = UserIntent.antonyms;
+		} else if (m100.find()) {
+			ourUserIntent = UserIntent.any;
 		} else {
 			ourUserIntent = UserIntent.Error;
 		}
@@ -1438,8 +1640,16 @@ private String selectQuestion3() {
 			break;
 			
 		//  What does the german word ++DEUTSCHE AUSSPRACHE++  mean in english?
+		/*case 6: 
+			Random r = new Random();
+			int meaning = r.nextInt(15);
+			switch(meaning) {
+			case 1: speech.setSsml("<speak> What is the english word for <voice name=\"Marlene\"><lang xml:lang=\"de-DE\">" + question + "</lang> </voice>?</speak>");
+			break;	
+			case 2: speech.setSsml("<speak> What does the german word <voice name=\"Marlene\"><lang xml:lang=\"de-DE\">" + question + "</lang> </voice>mean in English?</speak>");
+			}*/
 		case 6: 
-			speech.setSsml("<speak> What does the german word <voice name=\"Marlene\"><lang xml:lang=\"de-DE\">" + question + "</lang> </voice>mean in english?</speak>");
+			speech.setSsml("<speak> What is the english word for <voice name=\"Marlene\"><lang xml:lang=\"de-DE\">" + question + "</lang> </voice></speak>");
 			break;	
 			
 		// wrong feedback sound	
@@ -1459,7 +1669,10 @@ private String selectQuestion3() {
 		//  Two player mode. What does the german word ++DEUTSCHE AUSSPRACHE++  mean in english?
 		case 10: 
 			speech.setSsml("<speak> You're in two player mode. Please clarify who wants to be player one and who wants to be player two. If you think you know the correct answer, say you're player number. You will get points if your answer is correct. Let's begin! What does the german word <voice name=\"Marlene\"><lang xml:lang=\"de-DE\">" + question + "</lang> </voice>mean in english?</speak>");
-						break;	
+						break;
+		//case 11: 
+		//	speech.setSsml("<speak> What´s the opposite of" + question2 + "?</speak>");
+		//	break; 
 						
 			
 		default: 
