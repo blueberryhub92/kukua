@@ -84,6 +84,8 @@ implements SpeechletV2
 	private static int sum5;
 	private static int sum6;
 	private static int sum7;
+	private static int sum8;
+	private static int sum9;
 	private static String question = "";
 	private static String question2 = "";
 	private static String antonym = "";
@@ -109,12 +111,14 @@ implements SpeechletV2
 	static String continueMsg = "Continue?";
 	static String congratsMsg = "Congratulations! You've won one {replacement} points.";
 	static String goodbyeMsg = "I hope to hear from you soon, good bye!";
-	static String sumMsg = "You've {replacement} points. ";
+	static String sumMsg = "You've got {replacement} points. ";
 	static String sumTwoMsg = "The score is {replacement3} ";
 	static String sumThreeMsg = "to {replacement5}.";
+	static String sumLifesTwoMsg = "Player one has {replacement3} lifes ";
+	static String sumLifesThreeMsg = "and Player two {replacement5} lifes.";
 	static String errorYesNoMsg = "Sorry, I did not unterstand that. Please say resume or quit.";
 	static String errorAgainOrMenuMsg = "Sorry I did not unterstand that. Please say menu, again or quit.";
-	static String errorAnswerMsg = "Sorry I did not unterstand that. Please mention your answer again.";
+	static String errorAnswerMsg = "Sorry I did not understand that. Please mention your answer again.";
 	static String errorOneTwoMsg = "Unfortunately I did not unterstand that. Please say one or two.";
 	static String errorVokabelQuizMsg = "Unfortunately I did not understand that. Say vocabulary or quiz.";
 	static String errorVokabelMsg = "Do you want to train your vocabulary in a certain area? If so, choose one or continue with all areas.";
@@ -161,8 +165,10 @@ implements SpeechletV2
 		sum3 = 0;
 		sum4 = 0;
 		sum5 = 0;
-		sum6 = 0;
-		sum7 = 0;
+		sum6 = 5;
+		sum7 = 5;
+		sum8 = 0;
+		sum9 = 0;
 		recState = RecognitionState.OneTwo;
 	}
 
@@ -701,8 +707,10 @@ implements SpeechletV2
 			sum3 = 0;
 			sum4 = 0;
 			sum5 = 0;
-			sum6 = 0;
-			sum7 = 0;
+			sum6 = 5;
+			sum7 = 5;
+			sum8 = 0;
+			sum9 = 0;
 			increaseQuestions();
 			selectQuestion();
 			res = responseWithFlavour(question, 6);
@@ -716,8 +724,10 @@ implements SpeechletV2
 			sum3 = 0;
 			sum4 = 0;
 			sum5 = 0;
-			sum6 = 0;
-			sum7 = 0;
+			sum6 = 5;
+			sum7 = 5;
+			sum8 = 0;
+			sum9 = 0;
 			recState = RecognitionState.OneTwo; break;
 		} default: {
 			res = askUserResponse(errorAgainOrMenuMsg);
@@ -737,8 +747,10 @@ implements SpeechletV2
 			sum3 = 0;
 			sum4 = 0;
 			sum5 = 0;
-			sum6 = 0;
-			sum7 = 0;
+			sum6 = 5;
+			sum7 = 5;
+			sum8 = 0;
+			sum9 = 0;
 			res = askUserResponse(singleMsg);
 			recState = RecognitionState.VokabelQuiz; break;
 		} case twwo: {
@@ -747,8 +759,10 @@ implements SpeechletV2
 			sum3 = 0;
 			sum4 = 0;
 			sum5 = 0;
-			sum6 = 0;
-			sum7 = 0;
+			sum6 = 5;
+			sum7 = 5;
+			sum8 = 0;
+			sum9 = 0;
 			res = askUserResponse(multiMsg);
 			recState = RecognitionState.MultiThemes; break;
 			//selectQuestion();
@@ -1149,6 +1163,7 @@ implements SpeechletV2
 				if (userRequest.toLowerCase().equals(correctAnswer.toLowerCase())) {
 					logger.info("User answer recognized as correct.");
 					increaseSum4();
+					decreaseSum5();
 					if (sum4 >= 40) {
 						recState = RecognitionState.YesNoLevelTwo;
 						res = responseWithFlavour(correctMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2+sum4), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3+sum5), " ")+" "+playerOneWins+" "+continueLevelTwoMsg, 8);
@@ -1173,20 +1188,39 @@ implements SpeechletV2
 				logger.info("User answer ="+ userRequest.toLowerCase()+ "/correct answer="+correctAnswer);
 				if (userRequest.toLowerCase().equals(correctAnswer.toLowerCase())) {
 					logger.info("User answer recognized as correct.");
-					increaseSum6();
-					if (sum2+sum4+sum6>sum3+sum5+sum7 & sum6 >= 40) {
+					decreaseSum7();
+					if (sum7 == 0) {
+						increaseSum8();
+						if (sum2+sum4+sum8>sum3+sum5+sum9) {
 						recState = RecognitionState.AgainOrMenu;
-						res = responseWithFlavour(correctMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2+sum4+sum6), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3+sum5+sum7), " ")+" "+playerOneWinsGame+" "+againOrMenuMsg, 8);
+						res = responseWithFlavour(correctMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2+sum4+sum8), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3+sum5+sum9), " ")+" "+playerOneWinsGame+" "+againOrMenuMsg, 8);
+						} else {
+							recState = RecognitionState.AgainOrMenu;
+							res = responseWithFlavour(correctMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2+sum4+sum8), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3+sum5+sum9), " ")+" "+playerTwoWinsGame+" "+againOrMenuMsg, 8);
+						}
+					
 					} else {
 						recState = RecognitionState.YesNoLevelTwo;
-						res = responseWithFlavour(correctMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2+sum4+sum6), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3+sum5+sum7), " ")+" "+continueMsg, 8);
+						res = responseWithFlavour(correctMsg+" "+buildString2(sumLifesTwoMsg, String.valueOf(sum6), " ")+" "+buildString3(sumLifesThreeMsg, String.valueOf(sum7), " ")+" "+continueMsg, 8);
 					}
 				} else {
+					decreaseSum6();
+					if (sum6 == 0) {
+						increaseSum9();
+						if (sum2+sum4+sum8>sum3+sum5+sum9) {
+						recState = RecognitionState.AgainOrMenu;
+						res = responseWithFlavour(wrongMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2+sum4+sum8), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3+sum5+sum9), " ")+" "+playerOneWinsGame+" "+againOrMenuMsg, 8);
+						} else {
+							recState = RecognitionState.AgainOrMenu;
+							res = responseWithFlavour(wrongMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2+sum4+sum8), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3+sum5+sum9), " ")+" "+playerTwoWinsGame+" "+againOrMenuMsg, 8);
+						}
+					
+				} else {
 					recState = RecognitionState.YesNoLevelTwo;
-					res = responseWithFlavour(wrongMsg+" "+correctAnswer+". "+buildString2(sumTwoMsg, String.valueOf(sum2+sum4+sum6), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3+sum5+sum7), " ")+" "+continueMsg, 7);
+					res = responseWithFlavour(wrongMsg+" "+correctAnswer+". "+buildString2(sumLifesTwoMsg, String.valueOf(sum6), " ")+" "+buildString3(sumLifesThreeMsg, String.valueOf(sum7), " ")+" "+continueMsg, 7);
 				}
 			} 
-				return res;
+		}		return res;
 	}
 	
 	/*Mehrspielermodus: Antwort von Spieler zwei in Level eins*/
@@ -1221,6 +1255,7 @@ implements SpeechletV2
 				if (userRequest.toLowerCase().equals(correctAnswer.toLowerCase())) {
 					logger.info("User answer recognized as correct.");
 					increaseSum5();
+					decreaseSum4();
 					if (sum5 >= 40) {
 						recState = RecognitionState.YesNoLevelTwo;
 						res = responseWithFlavour(correctMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2+sum4), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3+sum5), " ")+" "+playerTwoWins+" "+continueLevelTwoMsg, 8);
@@ -1245,20 +1280,39 @@ implements SpeechletV2
 				logger.info("User answer ="+ userRequest.toLowerCase()+ "/correct answer="+correctAnswer);
 				if (userRequest.toLowerCase().equals(correctAnswer.toLowerCase())) {
 					logger.info("User answer recognized as correct.");
-					increaseSum7();
-					if (sum3+sum5+sum7>sum2+sum4+sum6 & sum7 >= 40) {
+					decreaseSum6();
+					if (sum6 == 0) {
+						increaseSum9();
+						if (sum2+sum4+sum8<sum3+sum5+sum9) {
 						recState = RecognitionState.AgainOrMenu;
-						res = responseWithFlavour(correctMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2+sum4+sum6), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3+sum5+sum7), " ")+" "+playerTwoWinsGame+" "+againOrMenuMsg, 8);
+						res = responseWithFlavour(correctMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2+sum4+sum8), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3+sum5+sum9), " ")+" "+playerTwoWinsGame+" "+againOrMenuMsg, 8);
+						} else {
+							recState = RecognitionState.AgainOrMenu;
+							res = responseWithFlavour(correctMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2+sum4+sum8), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3+sum5+sum9), " ")+" "+playerOneWinsGame+" "+againOrMenuMsg, 8);
+						}
 					} else {
-						recState = RecognitionState.YesNoLevelTwo;
-						res = responseWithFlavour(correctMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2+sum4+sum6), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3+sum5+sum7), " ")+" "+continueMsg, 8);
+						
+				recState = RecognitionState.YesNoLevelTwo;
+				res = responseWithFlavour(correctMsg+" "+buildString2(sumLifesTwoMsg, String.valueOf(sum6), " ")+" "+buildString3(sumLifesThreeMsg, String.valueOf(sum7), " ")+" "+continueMsg, 8);
 					}
-				} else {
+				} else {	
+					decreaseSum7();
+					if (sum7 == 0) {
+						increaseSum8();
+						if (sum2+sum4+sum8<sum3+sum5+sum9) {
+						recState = RecognitionState.AgainOrMenu;
+						res = responseWithFlavour(wrongMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2+sum4+sum8), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3+sum5+sum9), " ")+" "+playerTwoWinsGame+" "+againOrMenuMsg, 8);
+						} else {
+							recState = RecognitionState.AgainOrMenu;
+							res = responseWithFlavour(wrongMsg+" "+buildString2(sumTwoMsg, String.valueOf(sum2+sum4+sum8), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3+sum5+sum9), " ")+" "+playerOneWinsGame+" "+againOrMenuMsg, 8);
+						}
+					}
+				 else {
 					recState = RecognitionState.YesNoLevelTwo;
-					res = responseWithFlavour(wrongMsg+" "+correctAnswer+". "+buildString2(sumTwoMsg, String.valueOf(sum2+sum4+sum6), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3+sum5+sum7), " ")+" "+continueMsg, 7);
+					res = responseWithFlavour(wrongMsg+" "+correctAnswer+". "+buildString2(sumLifesTwoMsg, String.valueOf(sum6), " ")+" "+buildString3(sumLifesThreeMsg, String.valueOf(sum7), " ")+" "+continueMsg, 7);
 				}
 			} 
-				return res;
+		}	return res;
 	}
 	
 	private void increaseQuestions() {
@@ -1417,43 +1471,35 @@ implements SpeechletV2
 		}
 	}
 	
-	private void increaseSum6() {
+	private void decreaseSum6() {
 		switch(sum6){
-		case 0: sum6 = 10; break;
-		case 10: sum6 = 20; break;
-		case 20: sum6 = 30; break;
-		case 30: sum6 = 40; break;
-		case 40: sum6 = 50; break;
-		case 50: sum6 = 60; break;
-		case 60: sum6 = 70; break;
-		case 70: sum6 = 80; break;
-		case 80: sum6 = 90; break;
-		case 90: sum6 = 100; break;
-		case 100: sum6 = 110; break;
-		case 110: sum6 = 120; break;
-		case 120: sum6 = 130; break;
-		case 130: sum6 = 140; break;
-		case 140: sum6 = 150; break;
+		case 5: sum6 = 4; break;
+		case 4: sum6 = 3; break;
+		case 3: sum6 = 2; break;
+		case 2: sum6 = 1; break;
+		case 1: sum6 = 0; break;
 		}
 	}
 	
-	private void increaseSum7() {
+	private void increaseSum8() {
+		switch(sum8){
+		case 0: sum8 = 30; break;
+		}
+	}
+	
+	private void decreaseSum7() {
 		switch(sum7){
-		case 0: sum7 = 10; break;
-		case 10: sum7 = 20; break;
-		case 20: sum7 = 30; break;
-		case 30: sum7 = 40; break;
-		case 40: sum7 = 50; break;
-		case 50: sum7 = 60; break;
-		case 60: sum7 = 70; break;
-		case 70: sum7 = 80; break;
-		case 80: sum7 = 90; break;
-		case 90: sum7 = 100; break;
-		case 100: sum7 = 110; break;
-		case 110: sum7 = 120; break;
-		case 120: sum7 = 130; break;
-		case 130: sum7 = 140; break;
-		case 140: sum7 = 150; break;
+		case 5: sum7 = 4; break;
+		case 4: sum7 = 3; break;
+		case 3: sum7 = 2; break;
+		case 2: sum7 = 1; break;
+		case 1: sum7 = 0; break;
+		}
+	}
+	
+	private void increaseSum9() {
+		switch(sum9){
+		case 0: sum9 = 30; break;
 		}
 	}
 	
