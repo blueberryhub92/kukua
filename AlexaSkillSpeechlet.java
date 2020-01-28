@@ -89,19 +89,19 @@ implements SpeechletV2
 	private static String question = "";
 	private static String question2 = "";
 	private static String antonym = "";
-	private static String Answer = "correct answer";
+	private static String Answer = "i don't know";
 	private static String correctAnswer = "";
 	private static String correctAnswer2 = "";
 	public static enum RecognitionState {SingleThemes, MultiThemes,YesNoQuizLevelEnd, YesNoQuizLevelOne, YesNoQuizLevelTwo, YesNoQuizLevelThree, YesNoVokabelnEasy, YesNoVokabelnBasics, YesNoVokabelnHard, AnswerQuizLevelOne, AnswerQuizLevelTwo, AnswerQuizLevelThree, AnswerVokabelnEasy, AnswerVokabelnMedium, AnswerVokabelnHard, Answer, AnswerTwo, AnswerThree, AnswerFour, AnswerFive, AnswerSix, AnswerSeven, YesNo, YesNoTwo, YesNoLevel, YesNoLevelTwo, OneTwo, VokabelQuiz, Vokabel, WhichPlayer, WhichPlayerThree, WhichPlayerFour, AgainOrMenu, resumequizzen, SingleQuiz, YesNoQuiz, YesNoVokabeln, AnswerVokabeln, AnswerQuiz};
 	private RecognitionState recState;
-	public static enum UserIntent {adjectives, time, colours, verbs, antonyms, food, animals, answer, again, vocab, levelone, leveltwo, themes, onne, twwo, menu, playerone, playertwo, vocabulary, quiz, resume, yess, no, quit, any, basics, expressions, nextlevel, Error, Quiz};
+	public static enum UserIntent {numbers, adjectives, time, colours, verbs, antonyms, food, animals, answer, again, vocab, levelone, leveltwo, themes, onne, twwo, menu, playerone, playertwo, vocabulary, quiz, resume, yess, no, quit, any, basics, expressions, nextlevel, Error, Quiz};
 	UserIntent ourUserIntent;
 
 	static String welcomeMsg = "Hello and welcome at Quizzitch. How many players want to play, one or two players?";
 	static String singleMsg = "You're in single mode. Do you want to train vocabulary first or starting a quiz?";
-	static String multiMsg = "You're in two player mode. Please clarify who wants to be player one and who wants to be player two. If you think you know the correct answer, say you're player number. You will get points if your answer is correct. If nobody knows the answer, say correct answer. You can choose from the different themes or get questions from all areas.";	
-	static String ThemeMsg = "You can choose between different themes. Tell me the area you want to learn vocabulary in or choose all vocabulary. If you don´t know an answer, say correct answer.";
-	static String singleQuizMsg = "Welcome to the single quiz mode. In case you don´t know the answer, say correct answer and the answer wll be given without loosing points. Let's begin!";
+	static String multiMsg = "You're in two player mode. Please clarify who wants to be player one and who wants to be player two. If you think you know the correct answer, say you're player number. You will get points if your answer is correct. If nobody knows the answer, say I don't know. You can choose from the different themes or get questions from all areas.";	
+	static String ThemeMsg = "You can choose between different themes. Tell me the area you want to learn vocabulary in or choose all vocabulary. If you don´t know an answer, say I don't know.";
+	static String singleQuizMsg = "Welcome to the single quiz mode. In case you don´t know the answer, say I don't know and the answer will be given without loosing points. Let's begin!";
 	static String antonymMsg = "What's the antonym of ";
 	static String wrongMsg = "That's wrong. The correct answer would be";
 	static String wrongVocMsg = "That's wrong. The correct answer would be";
@@ -140,7 +140,7 @@ implements SpeechletV2
 	static String resumequizzenMsg = "Do you want to play a quiz instead or quit the app??";
 	static String errorresumequizzen = "Sorry I did not understand that. Please say quiz or quit the app.";
 	static String resumeVokabelnMsg = "Do you want to the some vocabulary instead or quit the app?";
-	static String ThemesMsg = "The following themes are possible: basics, expressions, food, animals, verbs, colours, time, adjectives and antonyms. If you wanna learn vocabulary from a certain area, say the corresponding word.";
+	static String ThemesMsg = "The following themes are possible: basics, expressions, food, animals, verbs, colours, time, adjectives, numbers and antonyms. If you wanna learn vocabulary from a certain area, say the corresponding word.";
 	
 
 	private String buildString(String msg, String replacement1, String replacement2) {
@@ -184,7 +184,7 @@ implements SpeechletV2
 	
 	private String selectQuestion() {
 		
-		Answer = "correct answer";
+		Answer = "i don't know";
 		
 		Connection con = AlexaSkillSpeechlet.connect(); 
 		  PreparedStatement ps = null; 
@@ -382,6 +382,25 @@ implements SpeechletV2
 	  	   catch(SQLException e) {
 	    //System.out.println(e.toString());
 	  }
+		case 11: try {
+			logger.info("Try-Block");
+		 
+			String sql = "SELECT * FROM Vokabelliste WHERE Thema LIKE 'Zahlen' ORDER BY RANDOM() LIMIT 1";
+			ps = con.prepareStatement(sql); 
+			rs = ps.executeQuery();
+	    
+			while(rs.next()) {
+				/*int number = rs.getInt("number");*/
+				question = rs.getString("de"); 
+				correctAnswer = rs.getString("en");
+				String Thema = rs.getString("Thema");
+				return question+correctAnswer;
+	       
+	    }
+	      	  }
+	  	   catch(SQLException e) {
+	    //System.out.println(e.toString());
+	  }
 	}
 		  return null;
 		  }
@@ -532,6 +551,12 @@ implements SpeechletV2
 			recState = RecognitionState.AnswerVokabelnEasy; break;
 		} case adjectives: {
 			questions = 10;
+			increaseQuestions();
+			selectQuestion();
+			res = responseWithFlavour(question, 6);
+			recState = RecognitionState.AnswerVokabelnEasy; break;
+		} case numbers: {
+			questions = 11;
 			increaseQuestions();
 			selectQuestion();
 			res = responseWithFlavour(question, 6);
@@ -940,6 +965,12 @@ implements SpeechletV2
 			selectQuestion();
 			res = responseWithFlavour(question, 6);
 			recState = RecognitionState.WhichPlayer; break;
+		} case numbers: {
+			questions = 11;
+			increaseQuestions();
+			selectQuestion();
+			res = responseWithFlavour(question, 6);
+			recState = RecognitionState.WhichPlayer; break;
 		} case themes: {
 			res = askUserResponse(ThemesMsg);
 			recState = RecognitionState.MultiThemes; break;
@@ -1036,6 +1067,12 @@ implements SpeechletV2
 			recState = RecognitionState.AnswerQuizLevelOne; break;
 		} case adjectives: {
 			questions = 10;
+			increaseQuestions();
+			selectQuestion();
+			res = responseWithFlavour(question, 6);
+			recState = RecognitionState.AnswerQuizLevelOne; break;
+		} case numbers: {
+			questions = 11;
 			increaseQuestions();
 			selectQuestion();
 			res = responseWithFlavour(question, 6);
@@ -1715,6 +1752,7 @@ implements SpeechletV2
 		String pattern27 = "(.*)?(\\bcolours\\b)(.*)?";
 		String pattern28 = "(.*)?(\\btime\\b)(.*)?";
 		String pattern29 = "(.*)?(\\badjectives\\b)(.*)?";
+		String pattern30 = "(.*)?(\\bnumbers\\b)(.*)?";
 		String pattern100 = "(.*)?";
 		
 		
@@ -1777,6 +1815,8 @@ implements SpeechletV2
 		Matcher m28 = p28.matcher(userRequest);
 		Pattern p29 = Pattern.compile(pattern29);
 		Matcher m29 = p29.matcher(userRequest);
+		Pattern p30 = Pattern.compile(pattern30);
+		Matcher m30 = p30.matcher(userRequest);
 		Pattern p100 = Pattern.compile(pattern100);
 		Matcher m100 = p100.matcher(userRequest);
 		
@@ -1839,6 +1879,8 @@ implements SpeechletV2
 			ourUserIntent = UserIntent.time;
 		} else if (m29.find()) {
 			ourUserIntent = UserIntent.adjectives;
+		} else if (m30.find()) {
+			ourUserIntent = UserIntent.numbers;
 		} else if (m100.find()) {
 			ourUserIntent = UserIntent.any;
 		} else {
