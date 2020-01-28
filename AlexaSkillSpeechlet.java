@@ -94,7 +94,7 @@ implements SpeechletV2
 	private static String correctAnswer2 = "";
 	public static enum RecognitionState {SingleThemes, MultiThemes,YesNoQuizLevelEnd, YesNoQuizLevelOne, YesNoQuizLevelTwo, YesNoQuizLevelThree, YesNoVokabelnEasy, YesNoVokabelnBasics, YesNoVokabelnHard, AnswerQuizLevelOne, AnswerQuizLevelTwo, AnswerQuizLevelThree, AnswerVokabelnEasy, AnswerVokabelnMedium, AnswerVokabelnHard, Answer, AnswerTwo, AnswerThree, AnswerFour, AnswerFive, AnswerSix, AnswerSeven, YesNo, YesNoTwo, YesNoLevel, YesNoLevelTwo, OneTwo, VokabelQuiz, Vokabel, WhichPlayer, WhichPlayerThree, WhichPlayerFour, AgainOrMenu, resumequizzen, SingleQuiz, YesNoQuiz, YesNoVokabeln, AnswerVokabeln, AnswerQuiz};
 	private RecognitionState recState;
-	public static enum UserIntent {antonyms, food, animals, answer, again, vocab, levelone, leveltwo, themes, onne, twwo, menu, playerone, playertwo, vocabulary, quiz, resume, yess, no, quit, any, basics, expressions, nextlevel, Error, Quiz};
+	public static enum UserIntent {adjectives, time, colours, verbs, antonyms, food, animals, answer, again, vocab, levelone, leveltwo, themes, onne, twwo, menu, playerone, playertwo, vocabulary, quiz, resume, yess, no, quit, any, basics, expressions, nextlevel, Error, Quiz};
 	UserIntent ourUserIntent;
 
 	static String welcomeMsg = "Hello and welcome at Quizzitch. How many players want to play, one or two players?";
@@ -140,7 +140,7 @@ implements SpeechletV2
 	static String resumequizzenMsg = "Do you want to play a quiz instead or quit the app??";
 	static String errorresumequizzen = "Sorry I did not understand that. Please say quiz or quit the app.";
 	static String resumeVokabelnMsg = "Do you want to the some vocabulary instead or quit the app?";
-	static String ThemesMsg = "The following themes are possible: basics, expressions, food, animals and antonyms. If you wanna learn vocabulary from a certain area, say the corresponding word.";
+	static String ThemesMsg = "The following themes are possible: basics, expressions, food, animals, verbs, colours, time, adjectives and antonyms. If you wanna learn vocabulary from a certain area, say the corresponding word.";
 	
 
 	private String buildString(String msg, String replacement1, String replacement2) {
@@ -306,6 +306,82 @@ implements SpeechletV2
 	  	   catch(SQLException e) {
 	    //System.out.println(e.toString());
 	  }
+		case 7: try {
+			logger.info("Try-Block");
+		 
+			String sql = "SELECT * FROM Vokabelliste WHERE Thema LIKE 'Verben' ORDER BY RANDOM() LIMIT 1";
+			ps = con.prepareStatement(sql); 
+			rs = ps.executeQuery();
+	    
+			while(rs.next()) {
+				/*int number = rs.getInt("number");*/
+				question = rs.getString("de"); 
+				correctAnswer = rs.getString("en");
+				String Thema = rs.getString("Thema");
+				return question+correctAnswer;
+	       
+	    }
+	      	  }
+	  	   catch(SQLException e) {
+	    //System.out.println(e.toString());
+	  }
+		case 8: try {
+			logger.info("Try-Block");
+		 
+			String sql = "SELECT * FROM Vokabelliste WHERE Thema LIKE 'Farben' ORDER BY RANDOM() LIMIT 1";
+			ps = con.prepareStatement(sql); 
+			rs = ps.executeQuery();
+	    
+			while(rs.next()) {
+				/*int number = rs.getInt("number");*/
+				question = rs.getString("de"); 
+				correctAnswer = rs.getString("en");
+				String Thema = rs.getString("Thema");
+				return question+correctAnswer;
+	       
+	    }
+	      	  }
+	  	   catch(SQLException e) {
+	    //System.out.println(e.toString());
+	  }
+		case 9: try {
+			logger.info("Try-Block");
+		 
+			String sql = "SELECT * FROM Vokabelliste WHERE Thema LIKE 'Zeit' ORDER BY RANDOM() LIMIT 1";
+			ps = con.prepareStatement(sql); 
+			rs = ps.executeQuery();
+	    
+			while(rs.next()) {
+				/*int number = rs.getInt("number");*/
+				question = rs.getString("de"); 
+				correctAnswer = rs.getString("en");
+				String Thema = rs.getString("Thema");
+				return question+correctAnswer;
+	       
+	    }
+	      	  }
+	  	   catch(SQLException e) {
+	    //System.out.println(e.toString());
+	  }
+		case 10: try {
+			logger.info("Try-Block");
+		 
+			String sql = "SELECT * FROM Vokabelliste WHERE Thema LIKE 'Adjektive' ORDER BY RANDOM() LIMIT 1";
+			ps = con.prepareStatement(sql); 
+			rs = ps.executeQuery();
+	    
+			while(rs.next()) {
+				/*int number = rs.getInt("number");*/
+				question = rs.getString("de"); 
+				correctAnswer = rs.getString("en");
+				String Thema = rs.getString("Thema");
+				return question+correctAnswer;
+	       
+	    }
+	      	  }
+	  	   catch(SQLException e) {
+	    //System.out.println(e.toString());
+	  }
 	}
 		  return null;
 		  }
@@ -364,12 +440,12 @@ implements SpeechletV2
 		case resume: {
 			increaseQuestions();
 			selectQuestion();
-			res = responseWithFlavour(question, 6);
+			res = responseWithFlavour3(question);
 			recState = RecognitionState.AnswerVokabelnEasy; break;
 		} case yess: {
 			increaseQuestions();
 			selectQuestion();
-			res = responseWithFlavour(question, 6);
+			res = responseWithFlavour3(question);
 			recState = RecognitionState.AnswerVokabelnEasy; break;
 			
 		} case quit: {
@@ -432,6 +508,30 @@ implements SpeechletV2
 			recState = RecognitionState.AnswerVokabelnEasy; break;
 		} case antonyms: {
 			questions = 6;
+			increaseQuestions();
+			selectQuestion();
+			res = responseWithFlavour(question, 6);
+			recState = RecognitionState.AnswerVokabelnEasy; break;
+		} case verbs: {
+			questions = 7;
+			increaseQuestions();
+			selectQuestion();
+			res = responseWithFlavour(question, 6);
+			recState = RecognitionState.AnswerVokabelnEasy; break;
+		} case colours: {
+			questions = 8;
+			increaseQuestions();
+			selectQuestion();
+			res = responseWithFlavour(question, 6);
+			recState = RecognitionState.AnswerVokabelnEasy; break;
+		} case time: {
+			questions = 9;
+			increaseQuestions();
+			selectQuestion();
+			res = responseWithFlavour(question, 6);
+			recState = RecognitionState.AnswerVokabelnEasy; break;
+		} case adjectives: {
+			questions = 10;
 			increaseQuestions();
 			selectQuestion();
 			res = responseWithFlavour(question, 6);
@@ -816,6 +916,30 @@ implements SpeechletV2
 			selectQuestion();
 			res = responseWithFlavour(question, 6);
 			recState = RecognitionState.WhichPlayer; break;
+		} case verbs: {
+			questions = 7;
+			increaseQuestions();
+			selectQuestion();
+			res = responseWithFlavour(question, 6);
+			recState = RecognitionState.WhichPlayer; break;
+		} case colours: {
+			questions = 8;
+			increaseQuestions();
+			selectQuestion();
+			res = responseWithFlavour(question, 6);
+			recState = RecognitionState.WhichPlayer; break;
+		} case time: {
+			questions = 9;
+			increaseQuestions();
+			selectQuestion();
+			res = responseWithFlavour(question, 6);
+			recState = RecognitionState.WhichPlayer; break;
+		} case adjectives: {
+			questions = 10;
+			increaseQuestions();
+			selectQuestion();
+			res = responseWithFlavour(question, 6);
+			recState = RecognitionState.WhichPlayer; break;
 		} case themes: {
 			res = askUserResponse(ThemesMsg);
 			recState = RecognitionState.MultiThemes; break;
@@ -888,6 +1012,30 @@ implements SpeechletV2
 			recState = RecognitionState.AnswerQuizLevelOne; break;
 		} case antonyms: {
 			questions = 6;
+			increaseQuestions();
+			selectQuestion();
+			res = responseWithFlavour(question, 6);
+			recState = RecognitionState.AnswerQuizLevelOne; break;
+		} case verbs: {
+			questions = 7;
+			increaseQuestions();
+			selectQuestion();
+			res = responseWithFlavour(question, 6);
+			recState = RecognitionState.AnswerQuizLevelOne; break;
+		} case colours: {
+			questions = 8;
+			increaseQuestions();
+			selectQuestion();
+			res = responseWithFlavour(question, 6);
+			recState = RecognitionState.AnswerQuizLevelOne; break;
+		} case time: {
+			questions = 9;
+			increaseQuestions();
+			selectQuestion();
+			res = responseWithFlavour(question, 6);
+			recState = RecognitionState.AnswerQuizLevelOne; break;
+		} case adjectives: {
+			questions = 10;
 			increaseQuestions();
 			selectQuestion();
 			res = responseWithFlavour(question, 6);
@@ -1066,7 +1214,7 @@ implements SpeechletV2
 				 recState = RecognitionState.YesNoQuizLevelOne;
 					 res = askUserResponse(correctAnswerMsg+" "+correctAnswer+". "+continueMsg);
 		  } else {
-					
+			  		decreaseSum();
 					recState = RecognitionState.YesNoQuizLevelOne;
 					res = responseWithFlavour(wrongMsg+" "+correctAnswer+". "+buildString(sumMsg, String.valueOf(sum), " ")+" "+continueMsg, 7);
 					// wrongVocMsg+" "+correctAnswer+". "+continueMsg,7
@@ -1096,6 +1244,7 @@ implements SpeechletV2
 				 	 recState = RecognitionState.YesNoQuizLevelTwo;
 					 res = askUserResponse(correctAnswerMsg+" "+correctAnswer+". "+continueMsg);
 				} else {
+					decreaseSum();
 					recState = RecognitionState.YesNoQuizLevelTwo;
 					res = responseWithFlavour(wrongMsg+" "+correctAnswer+". "+buildString(sumMsg, String.valueOf(sum), " ")+" "+continueMsg, 7);
 				}
@@ -1124,6 +1273,7 @@ implements SpeechletV2
 				 recState = RecognitionState.YesNoQuizLevelThree;
 				 res = askUserResponse(correctAnswerMsg+" "+correctAnswer+". "+continueMsg);
 				} else {
+					decreaseSum();
 					recState = RecognitionState.YesNoQuizLevelThree;
 					res = responseWithFlavour(wrongMsg+" "+correctAnswer+". "+buildString(sumMsg, String.valueOf(sum), " ")+" "+continueMsg, 7);
 				}
@@ -1174,9 +1324,14 @@ implements SpeechletV2
 				} else {
 					decreaseSum4();
 					increaseSum5();
+					if (sum5 >= 40) {
+						recState = RecognitionState.YesNoLevelTwo;
+						res = responseWithFlavour(wrongMsg+" "+correctAnswer+". "+buildString2(sumTwoMsg, String.valueOf(sum2+sum4), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3+sum5), " ")+" "+playerTwoWins+" "+continueLevelTwoMsg, 7);
+					} else {
 					recState = RecognitionState.YesNoLevel;
 					res = responseWithFlavour(wrongMsg+" "+correctAnswer+". "+buildString2(sumTwoMsg, String.valueOf(sum2+sum4), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3+sum5), " ")+" "+continueMsg, 7);
-				}
+					}
+				}	
 			} 
 				return res;
 	}
@@ -1266,8 +1421,13 @@ implements SpeechletV2
 				} else {
 					decreaseSum5();
 					increaseSum4();
+					if (sum4 >= 40) {
+						recState = RecognitionState.YesNoLevelTwo;
+						res = responseWithFlavour(wrongMsg+" "+correctAnswer+". "+buildString2(sumTwoMsg, String.valueOf(sum2+sum4), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3+sum5), " ")+" "+playerOneWins+" "+continueLevelTwoMsg, 7);
+					} else {
 					recState = RecognitionState.YesNoLevel;
 					res = responseWithFlavour(wrongMsg+" "+correctAnswer+". "+buildString2(sumTwoMsg, String.valueOf(sum2+sum4), " ")+" "+buildString3(sumThreeMsg, String.valueOf(sum3+sum5), " ")+" "+continueMsg, 7);
+					}
 				}
 			} 
 				return res;
@@ -1348,6 +1508,26 @@ implements SpeechletV2
 		case 120: sum = 130; break;
 		case 130: sum = 140; break;
 		case 140: sum = 150; break;
+		}
+	}
+	
+	private void decreaseSum() {
+		switch(sum){
+		case 10: sum = 0; break;
+		case 20: sum = 10; break;
+		case 30: sum = 20; break;
+		case 40: sum = 30; break;
+		case 50: sum = 40; break;
+		case 60: sum = 50; break;
+		case 70: sum = 60; break;
+		case 80: sum = 70; break;
+		case 90: sum = 80; break;
+		case 100: sum = 90; break;
+		case 110: sum = 100; break;
+		case 120: sum = 110; break;
+		case 130: sum = 120; break;
+		case 140: sum = 130; break;
+		case 150: sum = 140; break;
 		}
 	}
 	
@@ -1531,6 +1711,10 @@ implements SpeechletV2
 		String pattern23 = "(.*)?(\\bfood\\b)(.*)?";
 		String pattern24 = "(.*)?(\\banimals\\b)(.*)?";
 		String pattern25 = "(.*)?(\\bantonyms\\b)(.*)?";
+		String pattern26 = "(.*)?(\\bverbs\\b)(.*)?";
+		String pattern27 = "(.*)?(\\bcolours\\b)(.*)?";
+		String pattern28 = "(.*)?(\\btime\\b)(.*)?";
+		String pattern29 = "(.*)?(\\badjectives\\b)(.*)?";
 		String pattern100 = "(.*)?";
 		
 		
@@ -1585,6 +1769,14 @@ implements SpeechletV2
 		Matcher m24 = p24.matcher(userRequest);
 		Pattern p25 = Pattern.compile(pattern25);
 		Matcher m25 = p25.matcher(userRequest);
+		Pattern p26 = Pattern.compile(pattern26);
+		Matcher m26 = p26.matcher(userRequest);
+		Pattern p27 = Pattern.compile(pattern27);
+		Matcher m27 = p27.matcher(userRequest);
+		Pattern p28 = Pattern.compile(pattern28);
+		Matcher m28 = p28.matcher(userRequest);
+		Pattern p29 = Pattern.compile(pattern29);
+		Matcher m29 = p29.matcher(userRequest);
 		Pattern p100 = Pattern.compile(pattern100);
 		Matcher m100 = p100.matcher(userRequest);
 		
@@ -1639,6 +1831,14 @@ implements SpeechletV2
 			ourUserIntent = UserIntent.animals;
 		} else if (m25.find()) {
 			ourUserIntent = UserIntent.antonyms;
+		} else if (m26.find()) {
+			ourUserIntent = UserIntent.verbs;
+		} else if (m27.find()) {
+			ourUserIntent = UserIntent.colours;
+		} else if (m28.find()) {
+			ourUserIntent = UserIntent.time;
+		} else if (m29.find()) {
+			ourUserIntent = UserIntent.adjectives;
 		} else if (m100.find()) {
 			ourUserIntent = UserIntent.any;
 		} else {
@@ -1654,6 +1854,33 @@ implements SpeechletV2
 	 * @param i
 	 * @return
 	 */
+	private SpeechletResponse responseWithFlavour3(String text) {
+		SsmlOutputSpeech speech = new SsmlOutputSpeech();
+		Random r = new Random();
+		int ques = r.nextInt(6);
+		switch(ques) {
+		case 1: speech.setSsml("<speak> What is the english term for <voice name=\"Marlene\"><lang xml:lang=\"de-DE\">" + question + "</lang> </voice></speak>");
+		break;	
+		case 2: speech.setSsml("<speak> What does the german term <voice name=\"Marlene\"><lang xml:lang=\"de-DE\">" + question + "</lang> </voice>mean in English?</speak>");
+		break;
+		case 3: speech.setSsml("<speak> Give me the english term for <voice name=\"Marlene\"><lang xml:lang=\"de-DE\">" + question + "</lang> </voice></speak>");
+		break;
+		case 4: speech.setSsml("<speak> This one´s interesting. The word <voice name=\"Marlene\"><lang xml:lang=\"de-DE\">" + question + "</lang> </voice>in english, please.</speak>");
+		break;
+		case 5: speech.setSsml("<speak> How about the term <voice name=\"Marlene\"><lang xml:lang=\"de-DE\">" + question + "</lang> </voice></speak>");
+		break;
+		case 6: speech.setSsml("<speak> Okay, here´s another one. <voice name=\"Marlene\"><lang xml:lang=\"de-DE\">" + question + "</lang> </voice></speak>");
+		break;
+		default: 
+			speech.setSsml("<speak> Here we go. <voice name=\"Marlene\"><lang xml:lang=\"de-DE\">" + question + "</lang> </voice>in english.</speak>");break;
+		}
+		Reprompt rep = new Reprompt();
+		rep.setOutputSpeech(speech);
+
+		return SpeechletResponse.newAskResponse(speech, rep);
+	}
+	
+	
 	private SpeechletResponse responseWithFlavour(String text, int i) {
 
 		SsmlOutputSpeech speech = new SsmlOutputSpeech();
@@ -1695,7 +1922,7 @@ implements SpeechletV2
 			case 2: speech.setSsml("<speak> What does the german word <voice name=\"Marlene\"><lang xml:lang=\"de-DE\">" + question + "</lang> </voice>mean in English?</speak>");
 			}*/
 		case 6: 
-			speech.setSsml("<speak> What is the english word for <voice name=\"Marlene\"><lang xml:lang=\"de-DE\">" + question + "</lang> </voice></speak>");
+			speech.setSsml("<speak> What is the english term for <voice name=\"Marlene\"><lang xml:lang=\"de-DE\">" + question + "</lang> </voice></speak>");
 			break;	
 			
 		// wrong feedback sound	
