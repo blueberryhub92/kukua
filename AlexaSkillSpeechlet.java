@@ -462,40 +462,32 @@ implements SpeechletV2
 		recognizeUserIntent(userRequest);
 		switch (ourUserIntent) {
 		case resume: {
-			 if (sum777 >= 1) {
-					questions = 6;
-					increaseQuestions();
-					selectQuestion();
-					res = responseWithFlavour(question, 11);
-					recState = RecognitionState.AnswerVokabelnEasy; break;
-				}
-				
-				else {
-					Random r2 = new Random();
-					int ques = r2.nextInt(2);
-					switch(ques) {
-					
-					case 1:{
-						//questions = 1;
-						increaseQuestions();
-						selectQuestion();
-						res = responseWithFlavour3(question);
-						recState = RecognitionState.AnswerVokabelnEasy; break;}
-							
-					case 2:{
-						questions = 6;
-						increaseQuestions();
-						selectQuestion();
-						res = responseWithFlavour(question, 11);
-						recState = RecognitionState.AnswerVokabelnEasy;break;}
-					}
-				} 
+		/*case resume: {
 			
+			increaseQuestions();
+			selectQuestion();
+			res = responseWithFlavour3(question);
+			recState = RecognitionState.AnswerQuizLevelOne; break;*/
+			
+			if (sum777 >= 1) {
+				questions = 6;
+				increaseQuestions();
+				selectQuestion();
+				res = responseWithFlavour(question, 11);
+				recState = RecognitionState.AnswerVokabelnEasy; break;
+			}
+			
+			else {
+				increaseQuestions();
+				selectQuestion();
+				res = responseWithFlavour3(question);
+				recState = RecognitionState.AnswerVokabelnEasy; break;
+			}
+				
 		} case quit: {
 			res = responseWithFlavour2(goodbyeMsg, 0); break;
 		} case no: {
 			res = responseWithFlavour2(goodbyeMsg, 0); break;
-			
 		} case menu: {
 			res = responseWithFlavour(welcomeMsg, 5);
 			recState = RecognitionState.OneTwo; break;
@@ -507,6 +499,7 @@ implements SpeechletV2
 			questions = 1;
 			res = askUserResponse(ThemeMsg);
 			recState = RecognitionState.Vokabel; break;
+			
 		} default: {
 			res = askUserResponse(errorYesNoMsg);
 		}
@@ -520,25 +513,11 @@ implements SpeechletV2
 		recognizeUserIntent(userRequest);
 		switch (ourUserIntent) {
 		case any: {
-			Random r2 = new Random();
-			int ques = r2.nextInt(2);
-			switch(ques) {
-			
-			case 1:
-				
-				increaseQuestions();
-				selectQuestion();
-				res = responseWithFlavour3(question);
-				recState = RecognitionState.AnswerVokabelnEasy; break;
-					
-			case 2:
-				questions = 6;
-				increaseQuestions();
-				selectQuestion();
-				res = responseWithFlavour(question, 11);
-				recState = RecognitionState.AnswerVokabelnEasy; break;
-			}
-		
+			questions = 1;
+			increaseQuestions();
+			selectQuestion();
+			res = responseWithFlavour3(question);
+			recState = RecognitionState.AnswerVokabelnEasy; break;
 		} case basics: {
 			questions = 2;
 			increaseQuestions();
@@ -565,9 +544,7 @@ implements SpeechletV2
 			recState = RecognitionState.AnswerVokabelnEasy; break;
 		} case antonyms: {
 			questions = 6;
-			
 			antonymsselected();
-			
 			increaseQuestions();
 			selectQuestion();
 			res = responseWithFlavour(question, 11);
@@ -602,14 +579,12 @@ implements SpeechletV2
 			selectQuestion();
 			res = responseWithFlavour3(question);
 			recState = RecognitionState.AnswerVokabelnEasy; break;
-		} case menu: {
-			res = responseWithFlavour(welcomeMsg, 5);
-			recState = RecognitionState.OneTwo; break;
-			
 		} case themes: {
 			res = askUserResponse(ThemesMsg);
 			recState = RecognitionState.Vokabel; break;
-			
+		} case menu: {
+			res = responseWithFlavour(welcomeMsg, 5);
+			recState = RecognitionState.OneTwo; break;
 		} default: {
 			res = askUserResponse(errorVokabelMsg);
 		}
