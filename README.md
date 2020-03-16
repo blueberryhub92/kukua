@@ -35,7 +35,7 @@ Skill Setup
 5. Open Folder 'target' in file 'Praxisprojekt-master' and copy war-file 'myskill.war' to the folder 'webapps' in your Tomcat file.
 6. Open your Amazon Alexa Account and create a skill. Give it a name of your choice, the model should be 'Custom' and the method to host your skill's backend resources should be 'Provision your own'.
 Most importantly, you need to give your skill an invocation name and set a web service endpoint to handle skill requests. The invocation name is up to you, but the endpoint must be the same as the one that is forwarded to you by ngrok. To do so, you need to set the Service Endpoint Type in the Alexa Developer Console to 'HTTPS', copy and paste the URL from ngrok to the free space in 'Default Region' and set it to 'My development endpoint is a sub-domain of a domain that has a wildcard certificate from a certificate authority'.
-7. You can copy and paste the following code into the JSON Editor in the Amazon Developer Console:
+7. Copy and paste the following code into the JSON Editor in the Amazon Developer Console:
 
 {
     "interactionModel": {
