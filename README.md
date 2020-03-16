@@ -13,10 +13,10 @@ Necessities
 
 First, you need to create a localhost using Apache Tomcat.
 On Mac Os X, this can be done as follows in the terminal:
-cd apche-tomcat-9.0.12 (may differ in case your Tomcat file is named differently)
-cd bin/
-chmod +x *.sh
-./startup.sh
+- cd apche-tomcat-9.0.12 (may differ in case your Tomcat file is named differently)
+- cd bin/
+- chmod +x *.sh
+- ./startup.sh
 
 Check whether or not Tomcat has started properly by writing 'localhost:8080' into your browser. the Apache server is running if you can see an Apache Tomcat interface.
 
