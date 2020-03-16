@@ -35,7 +35,62 @@ Skill Setup
 5. Open Folder 'target' in file 'Praxisprojekt-master' and copy war-file 'myskill.war' to the folder 'webapps' in your Tomcat file.
 6. Open your Amazon Alexa Account and create a skill. Give it a name of your choice, the model should be 'Custom' and the method to host your skill's backend resources should be 'Provision your own'.
 Most importantly, you need to give your skill an invocation name and set a web service endpoint to handle skill requests. The invocation name is up to you, but the endpoint must be the same as the one that is forwarded to you by ngrok. To do so, you need to set the Service Endpoint Type in the Alexa Developer Console to 'HTTPS', copy and paste the URL from ngrok to the free space in 'Default Region' and set it to 'My development endpoint is a sub-domain of a domain that has a wildcard certificate from a certificate authority'.
-JSON Editor: .......
+7. You can copy and paste the following code into the JSON Editor in the Amazon Developer Console:
+
+{
+    "interactionModel": {
+        "languageModel": {
+            "invocationName": "your chosen invocation name",
+            "intents": [
+                {
+                    "name": "AMAZON.CancelIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.HelpIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.StopIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.NavigateHomeIntent",
+                    "samples": []
+                },
+                {
+                    "name": "Fallback",
+                    "slots": [
+                        {
+                            "name": "anything",
+                            "type": "anything"
+                        }
+                    ],
+                    "samples": [
+                        "{anything}"
+                    ]
+                }
+            ],
+            "types": [
+                {
+                    "name": "anything",
+                    "values": [
+                        {
+                            "name": {
+                                "value": "two words"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "whatever"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}
 
 7. You can now save, build and test your model in the Alexa Developer Console.
 8. If you want to use your skill with your Amazon Echo or Amazon Echo Plus, you need to go to https://alexa.amazon.com/ and activate it. You should now be able start the skill by calling its' invocation name.
