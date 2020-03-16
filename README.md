@@ -92,5 +92,5 @@ Most importantly, you need to give your skill an invocation name and set a web s
     }
 }
 
-7. You can now save, build and test your model in the Alexa Developer Console.
-8. If you want to use your skill with your Amazon Echo or Amazon Echo Plus, you need to go to https://alexa.amazon.com/ and activate it. You should now be able start the skill by calling its' invocation name.
+9. You can now save, build and test your model in the Alexa Developer Console.
+10. If you want to use your skill with your Amazon Echo or Amazon Echo Plus, you need to go to https://alexa.amazon.com/ and activate it. You should now be able start the skill by calling its' invocation name.
